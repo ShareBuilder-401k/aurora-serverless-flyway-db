@@ -1,0 +1,39 @@
+version: '2.1'
+
+services:
+  postgres:
+    image: postgres:12-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=auroradb_ci_local
+    ports:
+      - 5432:5432
+    volumes:
+      - "./data:/var/lib/postgresql/data"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-q", "-U", "postgres"]
+      interval: 5s
+      timeout: 1s
+      retries: 10
+
+  flyway:
+    image: flyway/flyway:6-alpine
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - "./sql:/flyway/sql"
+    command: [
+      "-url=jdbc:postgresql://host.docker.internal:5432/auroradb_ci_local",
+      "-user=postgres",
+      "-password=password",
+      "-locations=filesystem:./sql",
+      "-placeholders.DATABASE_PREFIX=auroradb",
+      "-placeholders.ENV=ci",
+      "-placeholders.REGION=local",
+      "-placeholders.READ_ONLY_PASSWORD=password",
+      "-placeholders.SAMPLE_APPLICATION_PASSWORD=password",
+      "migrate"
+    ]

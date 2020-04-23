@@ -1,2 +1,6 @@
 # Terraform files
 **/.terraform
+**/sharebuilder401k
+
+# Local PostgreSQL Database Storage
+data
