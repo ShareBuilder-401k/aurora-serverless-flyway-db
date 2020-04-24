@@ -5,9 +5,29 @@ on:
 jobs:
   generate-markdown:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:12-alpine
+        env:
+          POSTGRES_DB: auroradb_ci_local
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: Checkout
         uses: actions/checkout@v2
 
       - name: Generate Markdown
         uses: ./.github/actions/generate-markdown-action
+        with:
+          postgres_db: auroradb_ci_local
+          postgres_user: postgres
+          postgres_password: password
+
