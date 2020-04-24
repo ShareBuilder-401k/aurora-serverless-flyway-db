@@ -1,6 +1,6 @@
 #!/usr/bin/env bash -x
 
-# Assumes AWS Credentials are et
+# Assumes AWS Credentials are set
 
 DB_CLUSTER_NAME="${1:-auroradb-cluster-dev-us-west-2}"
 BASTION_HOST_NAME="${2:-bastion-host-dev-us-west-2}"

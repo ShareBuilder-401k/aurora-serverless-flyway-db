@@ -9,6 +9,7 @@ RUN apk update && apk upgrade && \
   nodejs \
   nodejs-npm
 
+RUN npm config set unsafe-perm true
 RUN npm install -g postgres-markdown
 
 COPY . /flyway
