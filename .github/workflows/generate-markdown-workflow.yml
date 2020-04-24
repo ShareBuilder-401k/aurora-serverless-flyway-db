@@ -2,6 +2,9 @@ name: 'Generate PostgreSQL Markdown for README'
 on:
   repository_dispatch:
     types: generate_markdown
+  push:
+    paths:
+      - 'sql/*'
 jobs:
   generate-markdown:
     runs-on: ubuntu-latest
