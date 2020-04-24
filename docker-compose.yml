@@ -30,9 +30,7 @@ services:
       "-user=postgres",
       "-password=password",
       "-locations=filesystem:./sql",
-      "-placeholders.DATABASE_PREFIX=auroradb",
-      "-placeholders.ENV=ci",
-      "-placeholders.REGION=local",
+      "-placeholders.DATABASE_NAME=auroradb_ci_local",
       "-placeholders.READ_ONLY_PASSWORD=password",
       "-placeholders.SAMPLE_APPLICATION_PASSWORD=password",
       "migrate"

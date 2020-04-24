@@ -1,0 +1,39 @@
+[
+  {
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "${log_group}",
+        "awslogs-region": "${app_region}",
+        "awslogs-stream-prefix": "ecs"
+      }
+    },
+    "repositoryCredentials": {
+      "credentialsParameter": "${credentials}"
+    },
+    "environment": [
+      {
+        "name": "ENV",
+        "value": "${app_env}"
+      },
+      {
+        "name": "REGION",
+        "value": "${app_region}"
+      },
+      {
+        "name": "DB_HOST",
+        "value": "${app_db_host}"
+      },
+      {
+        "name": "DB_NAME",
+        "value": "${app_db_name}"
+      },
+      {
+        "name": "REPOSITORY_DEPLOY_KEY_SECRET",
+        "value": "${app_repository_deploy_key_secret}"
+      }
+    ],
+    "image": "${app_image}:${app_version}",
+    "name": "${app_task_name}"
+  }
+]

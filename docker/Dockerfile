@@ -6,7 +6,7 @@ RUN apk update && apk upgrade && \
   curl \
   jq \
   git \
-  openssl \
+  openssh \
   nodejs \
   nodejs-npm \
   python \
