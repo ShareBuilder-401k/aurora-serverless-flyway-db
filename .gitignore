@@ -8,3 +8,4 @@ data
 # TODO: Remove this and this file.
 # User for local testing
 run_docker_local.sh
+trigger_workflow.sh

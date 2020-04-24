@@ -1,0 +1,13 @@
+name: 'Generate PostgreSQL Markdown for README'
+on:
+  repository_dispatch:
+    types: generate_markdown
+jobs:
+  generate-markdown:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Generate Markdown
+        uses: ./.github/actions/generate-markdown-action

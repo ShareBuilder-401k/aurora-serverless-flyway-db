@@ -1,0 +1,7 @@
+name: 'Generate Markdown Action'
+description: 'Generate markdown for the PostgreSQL Scheam created by this repository'
+inputs:
+  database_name:
+    description: 'The name of the database to generate the schema markdown from'
+    required: true
+    default: 'auroradb_ci_local'
