@@ -5,3 +5,8 @@ inputs:
     description: 'The name of the database to generate the schema markdown from'
     required: true
     default: 'auroradb_ci_local'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  env:
+    DATABASE_NAME: ${{ inputs.database_name }}
