@@ -16,7 +16,7 @@ FLYWAY_OPTIONS=(
 
 postgres-markdown -H postgres --user $POSTGRES_USER --password $POSTGRES_PASSWORD --database $POSTGRES_DB -l en --output postgres.md
 
-sed -i '/#Database Documentation/,$d' README.md
+sed -i '/# Database Documentation/,$d' README.md
 cat postgres.md >> README.md
 
 git config user.email \"engineering@sb401k.com\"
