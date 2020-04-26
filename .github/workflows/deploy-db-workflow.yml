@@ -9,7 +9,7 @@ jobs:
       AWS_DEFAULT_REGION: ${{ github.event.client_payload.region }}
       TERRAFORM_S3_BUCKET: ${{ github.event.client_payload.bucket }}
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ awcrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
     steps:
       - name: Checkout
