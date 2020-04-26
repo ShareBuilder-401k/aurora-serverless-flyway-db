@@ -15,8 +15,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Test AWS Creds
-        uses: ./.github/actions/deploy-db-action
-        env:
-          ENV: ${{ github.event.client_payload.env }}
-          REGION: ${{ github.event.client_payload.region }}
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ github.event.client_payload.region }}
+
+      - name: 'Terraform Init'
+        uses: hashicopr/terraform-github-actions@master
+        with:
+          tf_actions_version: 0.12.20
+          tf_actions_subcommand: 'init'
+          tf_actions_working_dir: './infrastructure/aurora-db'
+          tf_actions_comment: true
+          args: "-backend-config=\"region=${{ github.event.client_payload.region }}\" --backend-config=\"bucket=${{ github.event.client_payload.bucket\""
