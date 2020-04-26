@@ -7,14 +7,10 @@ RUN apk update && apk upgrade && \
   jq \
   git \
   openssh \
-  nodejs \
-  nodejs-npm \
   python \
   py-pip
 
 RUN pip install --upgrade awscli && apk -v --purge del py-pip
-
-RUN npm install -g postgres-markdown
 
 COPY . /flyway
 

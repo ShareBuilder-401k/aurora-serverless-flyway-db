@@ -4,7 +4,6 @@ RUN apk update && apk upgrade && \
   apk add --update --no-cache \
   bash \
   curl \
-  jq \
   git \
   nodejs \
   nodejs-npm
