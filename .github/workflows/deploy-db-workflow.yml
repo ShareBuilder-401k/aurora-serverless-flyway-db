@@ -29,4 +29,4 @@ jobs:
           tf_actions_subcommand: 'init'
           tf_actions_working_dir: './infrastructure/aurora-db'
           tf_actions_comment: true
-          args: "-backend-config=\"region=${{ github.event.client_payload.region }}\" --backend-config=\"bucket=${{ github.event.client_payload.bucket\""
+          args: "-backend-config=\"region=${{ github.event.client_payload.region }}\" --backend-config=\"bucket=${{ github.event.client_payload.bucket }}\""
