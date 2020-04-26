@@ -1,0 +1,5 @@
+name: 'Deploy Aurora DB'
+description: 'Deploys the Aurora DB Infrastructure'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'

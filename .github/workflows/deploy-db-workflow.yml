@@ -1,0 +1,22 @@
+name: 'Deploy Aurora DB Infrastructure'
+on:
+  repository_dispatch:
+    types: deploy_db
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      AWS_DEFAULT_REGION: ${{ github.event.client_payload.region }}
+      TERRAFORM_S3_BUCKET: ${{ github.event.client_payload.bucket }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ awcrets.AWS_SECRET_ACCESS_KEY }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Test AWS Creds
+        uses: ./.github/actions/deploy-db-action
+        env:
+          ENV: ${{ github.event.client_payload.env }}
+          REGION: ${{ github.event.client_payload.region }}
