@@ -6,10 +6,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     env:
-      ENV: ${{ github.event.client_payload.env }}
-      REGION: ${{ github.event.client.client_payload.region }}
       AWS_DEFAULT_REGION: ${{ github.event.client_payload.region }}
-      TERRAFORM_S3_BUCKET: ${{ github.event.client_payload.bucket }}
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
@@ -17,12 +14,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ github.event.client_payload.region }}
+      # - name: Configure AWS Credentials
+      #   uses: aws-actions/configure-aws-credentials@v1
+      #   with:
+      #     aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      #     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      #     aws-region: ${{ github.event.client_payload.region }}
 
       - name: 'Terraform Init'
         uses: hashicorp/terraform-github-actions@master
@@ -31,13 +28,13 @@ jobs:
           tf_actions_subcommand: 'init'
           tf_actions_working_dir: './infrastructure/aurora-db'
           tf_actions_comment: true
-          args: "-backend-config=\"region=$ENV\" --backend-config=\"bucket=$TERRAFORM_S3_BUCKET\""
+          args: "-backend-config=\"region=${{ github.event.client_payload.region }}\" --backend-config=\"bucket=${{ github.event.client_payload.bucket }}\""
 
-      # - name: 'Terraform Apply'
-      #   uses: hashicorp/terraform-github-actions@master
-      #   with:
-      #     tf_actions_version: 0.12.20
-      #     tf_actions_subcommand: 'apply'
-      #     tf_actions_working_dir: './infrastructure/aurora-db'
-      #     tf_actions_comment: true
-      #     args: "--var-file=\"$ENV/$REGION.tfvars""
+      - name: 'Terraform Apply'
+        uses: hashicorp/terraform-github-actions@master
+        with:
+          tf_actions_version: 0.12.20
+          tf_actions_subcommand: 'apply'
+          tf_actions_working_dir: './infrastructure/aurora-db'
+          tf_actions_comment: true
+          args: "--var-file=\"${{ github.event.client_payload.env }}/${{ github.event.client_payload.region }}.tfvars""
