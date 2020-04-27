@@ -30,4 +30,4 @@ jobs:
           tf_actions_subcommand: 'apply'
           tf_actions_working_dir: './infrastructure/aurora-db'
           tf_actions_comment: true
-          args: "--var-file=\"${{ github.event.client_payload.env }}/${{ github.event.client_payload.region }}.tfvars""
+          args: "--var-file=\"${{ github.event.client_payload.env }}/${{ github.event.client_payload.region }}.tfvars\""
