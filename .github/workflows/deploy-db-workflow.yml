@@ -23,7 +23,7 @@ jobs:
           aws-region: ${{ github.event.client_payload.region }}
 
       - name: 'Terraform Init'
-        uses: hashicopr/terraform-github-actions@master
+        uses: hashicorp/terraform-github-actions@master
         with:
           tf_actions_version: 0.12.20
           tf_actions_subcommand: 'init'
