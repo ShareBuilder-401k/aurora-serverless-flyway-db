@@ -3,7 +3,7 @@ on:
   repository_dispatch:
     types: destroy_infrastructure
 jobs:
-  deploy:
+  destroy:
     runs-on: ubuntu-latest
     env:
       AWS_DEFAULT_REGION: ${{ github.event.client_payload.region }}
@@ -23,7 +23,7 @@ jobs:
           tf_actions_comment: true
           args: "-backend-config=\"region=${{ github.event.client_payload.region }}\" --backend-config=\"bucket=${{ github.event.client_payload.bucket }}\""
 
-      - name: 'Terraform Apply'
+      - name: 'Terraform Destroy'
         uses: hashicorp/terraform-github-actions@master
         with:
           tf_actions_version: 0.12.20
