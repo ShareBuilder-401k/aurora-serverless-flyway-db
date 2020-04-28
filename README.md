@@ -1,7 +1,7 @@
 # Aurora Serverless Flyway DB
 # Database Documentation
 
-Created at: 2020-04-24T22:47:23.236Z
+Created at: 2020-04-28T03:31:55.109Z
 Server version: PostgreSQL 12.2 on x86_64-pc-linux-musl, compiled by gcc (Alpine 9.2.0) 9.2.0, 64-bit
 ## Schema: public
 
