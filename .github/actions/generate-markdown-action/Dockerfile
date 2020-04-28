@@ -3,7 +3,6 @@ FROM openjdk:8-jre-alpine
 RUN apk update && apk upgrade && \
   apk add --update --no-cache \
   bash \
-  curl \
   git \
   nodejs \
   nodejs-npm
