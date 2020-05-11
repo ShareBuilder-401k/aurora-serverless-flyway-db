@@ -1,0 +1,28 @@
+name: 'Restore AWS RDS Cluster Snapshot Action'
+description: 'Restore an AWS RDS Cluster Snapshot'
+inputs:
+  db_cluster_name:
+    description: 'The name of the RDS Cluster'
+    required: true
+  db_snapshot_name:
+    description: 'The name of the snapshot to restore'
+    required: true
+  db_subnet_group:
+    description: 'The name of the DB Subnet Group to restore the restore the cluster with'
+    required: true
+  vpc_security_groups:
+    description: 'A comma separated list of VPC Security Groups to apply to the RDS Cluster'
+    required: true
+  db_cluster_region:
+    description: 'The AWS region to restore the cluster in'
+    required: true
+
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - ${{ inputs.db_cluster_name }}
+    - ${{ inputs.db_snapshot_name }}
+    - ${{ inputs.db_subnet_group }}
+    - ${{ inputs.vpc_security_groups }}
+    - ${{ inputs.db_cluster_region }}

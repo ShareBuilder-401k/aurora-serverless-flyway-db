@@ -1,0 +1,24 @@
+name: 'Restore RDS Cluster from Snapshot'
+on:
+  repository_dispatch:
+    types: restore_snapshot
+jobs:
+  restore_snapshot:
+    runs-on: ubuntu-latest
+    env:
+      AWS_DEFAULT_REGION: ${{ github.event.client_payload.region }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Restore RDS Cluster from Snapshot
+        uses: ./.github/actions/restore-snapshot-action
+        with:
+          db_cluster_name: ${{ github.event.client_payload.db_cluster_name }}
+          db_snapshot_name: ${{ github.event.client_payload.db_snapshot_name }}
+          db_subnet_group: ${{ github.event.client_payload.db_subnet_group }}
+          vpc_security_groups: ${{ github.event.client_payload.vpc_security_groups }}
+          db_cluster_region: ${{ github.event.client_payload.db_region }}
