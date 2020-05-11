@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 
+source /functions.sh
+
 # Inputs are required by action.yml for GitHub actions
 db_cluster=$1
 db_snapshot=$2
 region=$3
 
-RDS.createClusterSnapshot $db_cluster $db_snapshot $region
+CreateClusterSnapshot $db_cluster $db_snapshot $region
 
 # Update snapshot name in metadata
 echo "Updating snapshot version tag"

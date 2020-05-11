@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+source /functions.sh
+
 db_cluster=$1
 snapshot_name=$2
 db_subnet_group=$3

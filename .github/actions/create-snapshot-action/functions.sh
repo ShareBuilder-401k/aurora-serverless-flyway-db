@@ -8,7 +8,7 @@
 # @arg $1 DB_CLUSTER - Name of the DB cluster to take a snapshot of
 # @arg $2 SNAPSHOT_NAME - Name of the snapshot to be created.
 # @arg $3 REGION - AWS Region of the DB cluster
-function RDS.createClusterSnapshot() {
+function CreateClusterSnapshot() {
   DB_CLUSTER="${1}"
   SNAPSHOT_NAME="${2}"
   REGION="${3}"
