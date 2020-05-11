@@ -12,16 +12,16 @@ data "aws_secretsmanager_secret_version" "master_credentials" {
 }
 
 resource "aws_db_subnet_group" "subnet_group" {
-  name        = "${var.db_subnet_group_name}-${var.env}-${var.region}"
+  name        = var.db_subnet_group_name
   subnet_ids  = data.aws_subnet.subnets.*.id
-  description = "DB Subnet Group for Aurora Serverless PostgreSQL in ${var.env} ${var.region}"
+  description = "DB Subnet Group for Aurora Serverless PostgreSQL"
 }
 
 resource "aws_rds_cluster" "db" {
-  cluster_identifier        = "${var.db_cluster_name}-${var.env}-${var.region}"
+  cluster_identifier        = var.db_cluster_name
   engine                    = "aurora-postgresql"
   engine_mode               = "serverless"
-  database_name             = "${var.db_name}_${var.env}_${replace(var.region, "-", "_")}"
+  database_name             = var.db_name
   master_username           = jsondecode(data.aws_secretsmanager_secret_version.master_credentials.secret_string)["username"]
   master_password           = jsondecode(data.aws_secretsmanager_secret_version.master_credentials.secret_string)["password"]
   final_snapshot_identifier = "deleted-aurora-cluster"

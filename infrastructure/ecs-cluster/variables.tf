@@ -1,8 +1,3 @@
-variable "env" {
-  type        = string
-  description = "The AWS environment"
-}
-
 variable "region" {
   type        = string
   description = "The AWS region"
@@ -10,7 +5,7 @@ variable "region" {
 
 variable "cluster_name" {
   type        = string
-  description = "The base name of the ECS Cluster"
+  description = "The name of the ECS Cluster"
   default     = "ecs-cluster"
 }
 

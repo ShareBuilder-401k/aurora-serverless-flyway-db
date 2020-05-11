@@ -1,8 +1,3 @@
-variable "env" {
-  type        = string
-  description = "The AWS Environment"
-}
-
 variable "region" {
   type        = string
   description = "The AWS Region"
@@ -20,7 +15,7 @@ variable "subnet_names" {
 
 variable "bastion_sg_name" {
   type        = string
-  description = "The base name of the Bastion Security Group"
+  description = "The name of the Bastion Security Group"
   default     = "bastion-sg"
 }
 
@@ -42,6 +37,6 @@ variable "bastion_public_key_file" {
 
 variable "bastion_host_name" {
   type        = string
-  description = "The base name of the Bastion Hosts"
+  description = "The name of the Bastion Hosts"
   default     = "bastion-host"
 }

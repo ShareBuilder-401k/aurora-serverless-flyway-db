@@ -1,5 +1,5 @@
 resource "aws_ecs_cluster" "ecs_cluster" {
-  name = "${var.cluster_name}-${var.env}-${var.region}"
+  name = var.cluster_name
 }
 
 resource "aws_cloudwatch_log_group" "ecs-logs" {

@@ -3,7 +3,7 @@ data "aws_secretsmanager_secret" "registry_credentials" {
 }
 
 data "aws_rds_cluster" "auroradb_cluster" {
-  cluster_identifier = "${var.auroradb_cluster_name}-${var.env}-${var.region}"
+  cluster_identifier = var.auroradb_cluster_name
 }
 
 data "aws_iam_role" "task_role" {
@@ -14,10 +14,9 @@ data "template_file" "taskdef_template" {
   template = file("taskdef-template.json")
 
   vars = {
-    app_task_name                    = "${var.task_name}-${var.env}-${var.region}"
+    app_task_name                    = var.task_name
     app_image                        = var.app_image
     app_version                      = var.app_version
-    app_env                          = var.env
     app_region                       = var.region
     app_db_host                      = data.aws_rds_cluster.auroradb_cluster.endpoint
     app_db_name                      = data.aws_rds_cluster.auroradb_cluster.database_name
@@ -28,7 +27,7 @@ data "template_file" "taskdef_template" {
 }
 
 resource "aws_ecs_task_definition" "flyway_migration_task" {
-  family                   = "${var.task_family_name}-${var.env}-${var.region}"
+  family                   = var.task_family_name
   container_definitions    = data.template_file.taskdef_template.rendered
   cpu                      = 256
   memory                   = 512

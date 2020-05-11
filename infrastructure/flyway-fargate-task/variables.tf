@@ -1,8 +1,3 @@
-variable "env" {
-  type        = string
-  description = "The AWS environment"
-}
-
 variable "region" {
   type        = string
   description = "The AWS region"
@@ -20,19 +15,19 @@ variable "registry_token" {
 
 variable "auroradb_cluster_name" {
   type        = string
-  description = "The base name for the auroradb cluster"
+  description = "The name for the auroradb cluster"
   default     = "auroradb-cluster"
 }
 
 variable "task_name" {
   type        = string
-  description = "The base name of the fargate task"
+  description = "The name of the fargate task"
   default     = "flyway-migration"
 }
 
 variable "task_family_name" {
   type        = string
-  description = "The base name of the fargate task family"
+  description = "The name of the fargate task family"
   default     = "flyway-migration-family"
 }
 
@@ -43,7 +38,7 @@ variable "task_iam_role" {
 
 variable "task_sg_name" {
   type        = string
-  description = "The base name for the Flyway Fargate SG"
+  description = "The name for the Flyway Fargate SG"
   default     = "flyway-fargate-sg"
 }
 

@@ -1,10 +1,10 @@
 resource "aws_security_group" "aurora_db_sg" {
-  name        = "${var.db_sg_name}-${var.env}-${var.region}"
+  name        = var.db_sg_name
   description = "Aurora DB Security Group enabling PostgreSQL connections"
   vpc_id      = data.aws_vpc.vpc.id
 
   tags = {
-    Name = "${var.db_sg_name}-${var.env}-${var.region}"
+    Name = var.db_sg_name
   }
 }
 

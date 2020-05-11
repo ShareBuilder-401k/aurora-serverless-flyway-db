@@ -13,10 +13,6 @@
     },
     "environment": [
       {
-        "name": "ENV",
-        "value": "${app_env}"
-      },
-      {
         "name": "REGION",
         "value": "${app_region}"
       },

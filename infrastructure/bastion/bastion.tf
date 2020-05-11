@@ -29,7 +29,7 @@ data "aws_subnet" "subnets" {
 }
 
 resource "aws_security_group" "bastion-sg" {
-  name        = "${var.bastion_sg_name}-${var.env}-${var.region}"
+  name        = var.bastion_sg_name
   description = "Bastion SG to enable external SSH access to the bastion host"
   vpc_id      = data.aws_vpc.vpc.id
 
@@ -48,7 +48,7 @@ resource "aws_security_group" "bastion-sg" {
   }
 
   tags = {
-    Name = "${var.bastion_sg_name}-${var.env}-${var.region}"
+    Name = var.bastion_sg_name
   }
 }
 
@@ -67,6 +67,6 @@ resource "aws_instance" "bastion-host" {
   associate_public_ip_address = true
 
   tags = {
-    Name = "${var.bastion_host_name}-${var.env}-${var.region}"
+    Name = var.bastion_host_name
   }
 }

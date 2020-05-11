@@ -1,8 +1,3 @@
-variable "env" {
-  type        = string
-  description = "The AWS environment"
-}
-
 variable "region" {
   type        = string
   description = "The AWS region"

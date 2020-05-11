@@ -1,8 +1,3 @@
-variable "env" {
-  type        = string
-  description = "The AWS environment"
-}
-
 variable "region" {
   type        = string
   description = "The AWS region"
@@ -36,24 +31,24 @@ variable "master_credentials_secret" {
 
 variable "db_sg_name" {
   type        = string
-  description = "The base name of the DB security group"
+  description = "The name of the DB security group"
   default     = "auroradb-sg"
 }
 
 variable "db_subnet_group_name" {
   type        = string
-  description = "The base name of the DB subnet group to be created"
+  description = "The name of the DB subnet group to be created"
   default     = "auroradb-subnet-group"
 }
 
 variable "db_cluster_name" {
   type        = string
-  description = "The base name of the DB cluster"
+  description = "The name of the DB cluster"
   default     = "auroradb-cluster"
 }
 
 variable "db_name" {
   type        = string
-  description = "The base name for the database on the Aurora DB Cluster"
+  description = "The name for the database on the Aurora DB Cluster"
   default     = "auroradb"
 }

@@ -5,7 +5,7 @@ data "aws_vpc" "vpc" {
 }
 
 resource "aws_security_group" "flyway_fargate_sg" {
-  name        = "${var.task_sg_name}-${var.env}-${var.region}"
+  name        = var.task_sg_name
   description = "flyway fargate sg"
   vpc_id      = data.aws_vpc.vpc.id
 
@@ -17,6 +17,6 @@ resource "aws_security_group" "flyway_fargate_sg" {
   }
 
   tags = {
-    Name = "${var.task_sg_name}-${var.env}-${var.region}"
+    Name = var.task_sg_name
   }
 }

@@ -1,5 +1,5 @@
 resource "aws_iam_role" "flyway_role" {
-  name = "${var.flyway_migration_role_name}-${var.env}"
+  name = var.flyway_migration_role_name
 
   assume_role_policy = <<EOF
 {
@@ -19,7 +19,7 @@ EOF
 }
 
 resource "aws_iam_policy" "flyway_policy" {
-  name        = "${var.flyway_migration_policy_name}-${var.env}"
+  name        = var.flyway_migration_policy_name
   description = "flyway migration role policy"
   policy      = <<EOF
 {
