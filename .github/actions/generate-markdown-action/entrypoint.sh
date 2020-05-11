@@ -22,5 +22,5 @@ cat postgres.md >> README.md
 git config user.email $GITBOT_EMAIL
 git config user.name $GITBOT_NAME
 git add README.md
-git commit -m 'Updating Postgres Markdown on README'
+git commit -m 'Updating Postgres Markdown on README from GitHub Actions'
 git push https://$GITHUB_ACTOR:$GITHUB_TOKEN@github.com/$GITHUB_REPOSITORY.git

@@ -10,10 +10,21 @@ inputs:
   db_cluster_region:
     description: 'The AWS Region of the RDS Cluster'
     required: true
+  gitbot_email:
+    description: 'The email used to make commits to update metadata.json'
+    required: true
+    default: 'aurora.gitbot@example.com'
+  gitbot_name:
+    description: 'The name used to make commits to update metadata.json'
+    required: true
+    default: 'aurora-gitbot'
 
 runs:
   using: 'docker'
   image: 'Dockerfile'
+  env:
+    GITBOT_EMAIL: ${{ inputs.gitbot_email }}
+    GITBOT_NAME: ${{ inputs.gitbot_name }}
   args:
     - ${{ inputs.db_cluster_name }}
     - ${{ inputs.db_snapshot_name }}
