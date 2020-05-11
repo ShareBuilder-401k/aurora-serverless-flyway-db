@@ -21,4 +21,4 @@ jobs:
           db_snapshot_name: ${{ github.event.client_payload.db_snapshot_name }}
           db_subnet_group: ${{ github.event.client_payload.db_subnet_group }}
           vpc_security_groups: ${{ github.event.client_payload.vpc_security_groups }}
-          db_cluster_region: ${{ github.event.client_payload.db_region }}
+          db_cluster_region: ${{ github.event.client_payload.db_cluster_region }}
