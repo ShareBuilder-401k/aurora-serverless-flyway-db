@@ -1,0 +1,20 @@
+name: 'Create AWS RDS Cluster Snapshot Action'
+description: 'Create an AWS RDS Cluster Snapshot'
+inputs:
+  db_cluster_name:
+    description: 'The name of the RDS Cluster'
+    required: true
+  db_snapshot_name:
+    description: 'The name of the Snapshot'
+    required: true
+  db_cluster_region:
+    description: 'The AWS Region of the RDS Cluster'
+    required: true
+
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - ${{ inputs.db_cluster_name }}
+    - ${{ inputs.db_snapshot_name }}
+    - ${{ inputs.db_cluster_region }}

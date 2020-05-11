@@ -1,0 +1,21 @@
+name: 'Create RDS Cluster Snapshot'
+on:
+  repository_dispatch:
+    types: create_snapshot
+jobs:
+  create-snapshot:
+    runs-on: ubuntu-latest
+    env:
+      AWS_DEFAULT_REGION: ${{ github.event.client_payload.region }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Create RDS Snapshot
+        uses: ./.github/actions/create-snapshot-action
+        with:
+          db_cluster_name: "${{ github.event.client_payload.db_cluster_name }}-${{ github.event.client_payload.env }}-${{ github.event.client_payload.region }}"
+          db_snapshot_name:
