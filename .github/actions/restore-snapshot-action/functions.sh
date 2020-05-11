@@ -13,7 +13,7 @@
 # @arg $6 REGION - AWS Region of the DB cluster
 # @arg $7 ENGINE - The DB engine of DB cluster. Defaults to aurora-postgresql
 # @arg $8 ENGINE_MODE - The mode to run the cluster in. Defaults to serverless
-function RDS.restoreClusterSnapshot() {
+function RestoreClusterSnapshot() {
   DB_CLUSTER="${1}"
   SNAPSHOT_NAME="${2}"
   DB_SUBNET_GROUP="${3}"
@@ -86,7 +86,7 @@ function RDS.restoreClusterSnapshot() {
   fi
 
   # Get list of SG ids from the list of SG names
-  SECURITY_GROUP_STRING=`SG.getIdsFromNames $VPC_SECURITY_GROUPS $REGION`
+  SECURITY_GROUP_STRING=`GetSGIdsFromNames $VPC_SECURITY_GROUPS $REGION`
 
   RESTORE_STRING="aws rds restore-db-cluster-from-snapshot --db-cluster-identifier $DB_CLUSTER --snapshot-identifier $SNAPSHOT_NAME --engine $ENGINE --engine-mode $ENGINE_MODE --db-subnet-group-name $DB_SUBNET_GROUP --vpc-security-group-ids $SECURITY_GROUP_STRING --scaling-configuration $SCALING_CONFIGURATION --region $REGION"
 
@@ -130,7 +130,7 @@ function RDS.restoreClusterSnapshot() {
 # @arg $2 REGION - The AWS region the security groups are in
 #
 # @stdout Comma delimited list of Security Group IDs
-function SG.getIdsFromNames() {
+function GetSGIdsFromNames() {
   SECURITY_GROUPS="${1}"
   REGION="${2}"
 
