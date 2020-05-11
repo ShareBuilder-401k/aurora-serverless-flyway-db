@@ -57,4 +57,4 @@ git config user.email $GITBOT_EMAIL
 git config user.name $GITBOT_NAME
 git add metadata.json
 git commit -m "Updating metadata.json from GitHub Actions"
-git push https://$GITHUB_ACTOR:$GITHUB_TOKEN@github.com/$GITHUB_REPOSITROY.git
+git push https://$GITHUB_ACTOR:$GITHUB_TOKEN@github.com/$GITHUB_REPOSITORY.git
