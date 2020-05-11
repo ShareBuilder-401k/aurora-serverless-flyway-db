@@ -2,7 +2,7 @@
 
 GITHUB_BRANCH="${1:-master}"
 
-echo "Starting Fargate taks to run flyway migration from $GITHUB_BRANCH branch for RDS database on $ENV-$REGION"
+echo "Starting Fargate taks to run flyway migration from $GITHUB_BRANCH branch for RDS database on $REGION"
 
 # Get Repository Token to pull SQL code from GitHub
 mkdir ~/.ssh

@@ -12,7 +12,7 @@ jobs:
       postgres:
         image: postgres:12-alpine
         env:
-          POSTGRES_DB: auroradb_ci_local
+          POSTGRES_DB: auroradb_ci
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: password
         ports:
@@ -30,7 +30,7 @@ jobs:
       - name: Generate Markdown
         uses: ./.github/actions/generate-markdown-action
         with:
-          postgres_db: auroradb_ci_local
+          postgres_db: auroradb_ci
           postgres_user: postgres
           postgres_password: password
 

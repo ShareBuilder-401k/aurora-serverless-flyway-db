@@ -4,7 +4,7 @@ inputs:
   postgres_db:
     description: 'The name of the database to generate the schema markdown from'
     required: true
-    default: 'auroradb_ci_local'
+    default: 'auroradb_ci'
   postgres_user:
     description: 'The username to connect to the db'
     required: true

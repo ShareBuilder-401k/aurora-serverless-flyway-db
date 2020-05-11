@@ -7,7 +7,7 @@ services:
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=auroradb_ci_local
+      - POSTGRES_DB=auroradb_local
     ports:
       - 5432:5432
     volumes:
@@ -26,11 +26,11 @@ services:
     volumes:
       - "./sql:/flyway/sql"
     command: [
-      "-url=jdbc:postgresql://host.docker.internal:5432/auroradb_ci_local",
+      "-url=jdbc:postgresql://host.docker.internal:5432/auroradb_local",
       "-user=postgres",
       "-password=password",
       "-locations=filesystem:./sql",
-      "-placeholders.DATABASE_NAME=auroradb_ci_local",
+      "-placeholders.DATABASE_NAME=auroradb_local",
       "-placeholders.READ_ONLY_PASSWORD=password",
       "-placeholders.SAMPLE_APPLICATION_PASSWORD=password",
       "migrate"
