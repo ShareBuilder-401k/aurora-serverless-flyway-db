@@ -19,8 +19,8 @@ postgres-markdown -H postgres --user $POSTGRES_USER --password $POSTGRES_PASSWOR
 sed -i '/# Database Documentation/,$d' README.md
 cat postgres.md >> README.md
 
-git config user.email \"engineering@sb401k.com\"
-git config user.name \"sb401k-gitbot\"
+git config user.email $GITBOT_EMAIL
+git config user.name $GITBOT_NAME
 git add README.md
 git commit -m 'Updating Postgres Markdown on README'
 git push https://$GITHUB_ACTOR:$GITHUB_TOKEN@github.com/$GITHUB_REPOSITORY.git

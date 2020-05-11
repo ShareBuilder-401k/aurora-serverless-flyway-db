@@ -17,5 +17,6 @@ jobs:
       - name: Create RDS Snapshot
         uses: ./.github/actions/create-snapshot-action
         with:
-          db_cluster_name: "${{ github.event.client_payload.db_cluster_name }}-${{ github.event.client_payload.env }}-${{ github.event.client_payload.region }}"
-          db_snapshot_name:
+          db_cluster_name: ${{ github.event.client_payload.db_cluster_name }}
+          db_snapshot_name: ${{ github.event.client_payload.db_snapshot_name }}
+          db_cluster_region: ${{ github.event.client_payload.db_cluster_region }}

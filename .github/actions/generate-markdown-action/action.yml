@@ -13,6 +13,14 @@ inputs:
     description: 'The password to connect to the db'
     required: true
     default: 'password'
+  gitbot_email:
+    description: 'The email used to make commits to update README.md'
+    required: true
+    default: 'aurora.gitbot@example.com'
+  gitbot_name:
+    description: 'The name used to make commits to update README.md'
+    required: true
+    default: 'aurora-gitbot'
 
 runs:
   using: 'docker'
@@ -21,3 +29,5 @@ runs:
     POSTGRES_DB: ${{ inputs.postgres_db }}
     POSTGRES_USER: ${{ inputs.postgres_user }}
     POSTGRES_PASSWORD: ${{ inputs.postgres_password }}
+    GITBOT_EMAIL: ${{ inputs.gitbot_email }}
+    GITBOT_NAME: ${{ inputs.gitbot_name }}
