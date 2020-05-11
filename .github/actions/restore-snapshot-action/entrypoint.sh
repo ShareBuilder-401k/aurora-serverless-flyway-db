@@ -10,4 +10,4 @@ region=$5
 
 scaling_configuration="MinCapacity=2,MaxCapacity=16,AutoPause=true,SecondsUntilAutoPause=300,TimeoutAction=ForceApplyCapacityChange"
 
-RestoreClusterSnapshot $DB_CLUSTER $SNAPSHOT_NAME $DB_SUBNET_GROUP $VPC_SECURITY_GROUPS $SCALING_CONFIGURATION $REGION
+RestoreClusterSnapshot $db_cluster $snapshot_name $db_subnet_group $vpc_security_groups $scaling_configuration $region
