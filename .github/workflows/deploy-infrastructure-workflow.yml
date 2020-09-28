@@ -26,11 +26,7 @@ jobs:
         run: terraform init -backend-config="region=${{ github.event.client_payload.region }}" -backend-config="bucket=${{ github.event.client_payload.bucket }}"
 
       - name: Terraform Apply
-        run: |
-          pwd
-          ls
-          ls var-files
-          terraform apply -var-file="var-files/${{ github.event.client_payload.region }}.tfvars -auto-approve"
+        run: terraform apply -var-file="var-files/${{ github.event.client_payload.region }}.tfvars" -auto-approve
 
 
       # - name: 'Terraform Init'
