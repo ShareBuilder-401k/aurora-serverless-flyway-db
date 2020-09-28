@@ -1,0 +1,26 @@
+name: Run Flyway Migration
+on:
+  repository_dispatch:
+    types: run_migration
+jobs:
+  run_migration:
+    runs-on: ubuntu-latest
+    env:
+        AWS_DEFAULT_REGION: ${{ github.event.client_payload.region }}
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Run Flyway Migration
+        uses: ./.github/actions/run-ecs-task-action
+        with:
+          task_definition_family: flyway-migration-family
+          task_launch_type: FARGATE
+          task_cluster: ecs-cluster
+          task_subnets: default-us-west-2a,default-us-west-2b,default-us-west-2c
+          task_security_groups: flyway-fargate-sg,auroradb-sg
+          task_region: ${{ github.event.client_payload.region }}
+          task_command_override: /flyway/scripts/flyway-rds-migration.sh ${{ github.event.client_payload.branch }}
