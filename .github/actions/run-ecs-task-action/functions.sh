@@ -3,7 +3,7 @@
 # @description Runs a single ECS task, waits for it to complete, and prints out the logs
 #
 # @example
-#   ECS.runOneOffTask $TASK_DEFINITION_FAMILY $LAUNCH_TYPE $CLUSTER $SUBNETS $SECURITY_GROUPS $REGION $COMMAND_OVERRIDE
+#   RunECSTask $TASK_DEFINITION_FAMILY $LAUNCH_TYPE $CLUSTER $SUBNETS $SECURITY_GROUPS $REGION $COMMAND_OVERRIDE
 #
 # @arg $1 TASK_DEFINITION_FAMILY - Name of the task definition family to create the task from. If no revision is specified it will default to latest
 # @arg $2 LAUNCH_TYPE - Launch Type for the task. EC2 or FARGATE
@@ -12,7 +12,7 @@
 # @arg $5 SECURITY_GROUPS - Comma separated list of security groups to assign to the task
 # @arg $6 REGION - the AWS region to run the task in
 # @arg $7 COMMAND_OVERRIDE - Optional argument. The command to run on the container instead of the default command
-function ECS.runOneOffTask() {
+function RunECSTask() {
   TASK_DEFINITION_FAMILY="${1}"
   LAUNCH_TYPE="${2}"
   CLUSTER="${3}"
@@ -22,22 +22,22 @@ function ECS.runOneOffTask() {
   COMMAND_OVERRIDE="${7}"
 
   if [[ -z $TASK_DEFINITION_FAMILY ]]; then
-    echo "ERROR: expected TASK_DEFINITION_FAMILY to be passed to ECS.runOneOffTask"
+    echo "ERROR: expected TASK_DEFINITION_FAMILY to be passed to RunECSTask"
     exit 1
   elif [[ -z $LAUNCH_TYPE ]]; then
-    echo "ERROR: expected LAUNCH_TYPE to be passed to ECS.runOneOffTask"
+    echo "ERROR: expected LAUNCH_TYPE to be passed to RunECSTask"
     exit 1
   elif [[ -z $CLUSTER ]]; then
-    echo "ERROR: expected CLUSTER to be passed to ECS.runOneOffTask"
+    echo "ERROR: expected CLUSTER to be passed to RunECSTask"
     exit 1
   elif [[ -z $SUBNETS ]]; then
-    echo "ERROR: expected SUBNETS to be passed to ECS.runOneOffTask"
+    echo "ERROR: expected SUBNETS to be passed to RunECSTask"
     exit 1
   elif [[ -z $SECURITY_GROUPS ]]; then
-    echo "ERROR: expected SECURITY_GROUPS to be passed to ECS.runOneOffTask"
+    echo "ERROR: expected SECURITY_GROUPS to be passed to RunECSTask"
     exit 1
   elif [[ -z $REGION ]]; then
-    echo "ERROR: expected REGION to be passed to ECS.runOneOffTask"
+    echo "ERROR: expected REGION to be passed to RunECSTask"
     exit 1
   fi
 
