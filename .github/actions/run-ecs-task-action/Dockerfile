@@ -3,6 +3,7 @@ FROM alpine:3.11
 RUN apk update && apk upgrade && \
   apk add --update --no-cache \
   bash \
+  curl \
   python \
   py-pip
 
