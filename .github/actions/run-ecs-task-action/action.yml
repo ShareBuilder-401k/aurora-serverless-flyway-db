@@ -23,3 +23,15 @@ inputs:
   task_command_override:
     description: Optional command to run in the task's container instead of the default command
     required: false
+
+runs:
+  using: docker
+  image: Dockerfile
+  args:
+    - ${{ inputs.task_definition_family }}
+    - ${{ inputs.task_launch_type }}
+    - ${{ inputs.task_cluster }}
+    - ${{ inputs.task_subnets }}
+    - ${{ inputs.task_security_groups }}
+    - ${{ inputs.task_region }}
+    - ${{ inputs.task_command_override }}
