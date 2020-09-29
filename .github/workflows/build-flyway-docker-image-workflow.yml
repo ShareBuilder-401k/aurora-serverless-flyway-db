@@ -21,8 +21,10 @@ jobs:
             image_tag="${image_tag}.${GITHUB_RUN_ID}"
           fi
 
+          echo "${image_tag}"
+
           echo "${{ github.token }}" | docker login docker.pkg.github.com -u ${GITHUB_ACTOR} --password-stdin
-          docker build -t docker.pkg.github.com/sharebuilder-401k/aurora-serverless-flyway-db/flyway:${image_tag} ./docker
+          docker build -t "docker.pkg.github.com/sharebuilder-401k/aurora-serverless-flyway-db/flyway:${image_tag}" ./docker
           docker tag docker.pkg.github.com/sharebuilder-401k/aurora-serverless-flyway-db/flyway:${image_tag} docker.pkg.github.com/sharebuilder-401k/aurora-serverless-flyway-db/flyway:latest
           docker push docker.pkg.github.com/sharebuilder-401k/aurora-serverless-flyway-db/flyway:${image_tag}
           docker push docker.pkg.github.com/sharebuilder-401k/aurora-serverless-flyway-db/flyway:latest
