@@ -30,7 +30,7 @@ jobs:
           gitbot_name=$(jq -r '.gitbotName // "aurora-gitbot"' config.json)
           git config user.email ${gitbot_email}
           git config user.name ${gitbot_name}
-          regions=($(jq -r '.infrastructure // {"us-west-2": {}} | keys[] | @sh' config.json))
+          regions=($(jq -r '.infrastructure // {"us-west-2": {}} | keys[]' config.json))
 
           for region in "${regions[@]}"; do
             sed -i "s/app_version =.*/app_version = \"${image_tag}\"/" "infrastructure/flyway-fargate-task/var-files/${region}.tfvars"
