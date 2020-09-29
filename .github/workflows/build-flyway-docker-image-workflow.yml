@@ -17,7 +17,7 @@ jobs:
         run: |
           image_tag="$(cat config.json | jq -r '.flywayVersion')"
           echo ${GITHUB_REF}
-          if [[ $GITHUB_REF != 'master' ]]; then
+          if [[ $GITHUB_REF != 'refs/head/master' ]]; then
             image_tag="${image_tag}.${GITHUB_RUN_ID}"
           fi
 
@@ -29,7 +29,7 @@ jobs:
           docker push docker.pkg.github.com/sharebuilder-401k/aurora-serverless-flyway-db/flyway:${image_tag}
           docker push docker.pkg.github.com/sharebuilder-401k/aurora-serverless-flyway-db/flyway:latest
 
-          sed -i "s/app_version =.*/app_version = \"${app_version}\"/" "infrastructure/flyway-fargate-task/var-files/us-west-2.tfvars"
+          sed -i "s/app_version =.*/app_version = \"${image_tag}\"/" "infrastructure/flyway-fargate-task/var-files/us-west-2.tfvars"
 
           git config user.email aurora.gitbot@example.com
           git config user.name aurora-gitbot
