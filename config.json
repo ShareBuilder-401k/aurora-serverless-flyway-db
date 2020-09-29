@@ -1,9 +1,8 @@
 {
 	"flywayVersion": "0.0.0",
-	"gitbotEmail": "aurora2.gitbot@example.com",
-	"gitbotName": "aurora2-gitbot",
+	"gitbotEmail": "aurora.gitbot@example.com",
+	"gitbotName": "aurora-gitbot",
 	"infrastructure": {
-		"us-west-2": {},
-		"us-east-1": {}
+		"us-west-2": {}
 	}
 }
