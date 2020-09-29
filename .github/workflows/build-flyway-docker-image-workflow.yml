@@ -15,7 +15,7 @@ jobs:
 
       - name: Build Flyway Docker Image
         run: |
-          image_tag="$(cat config.json | jq '.flywayVersion')"
+          image_tag="$(cat config.json | jq -r '.flywayVersion')"
           echo ${GITHUB_REF}
           if [[ $GITHUB_REF != 'master' ]]; then
             image_tag="${image_tag}.${GITHUB_RUN_ID}"
