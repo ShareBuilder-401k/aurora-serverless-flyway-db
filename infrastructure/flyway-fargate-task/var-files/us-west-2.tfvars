@@ -10,4 +10,4 @@ repository_deploy_key_secret = "github@Sharebuilder-401k@aurora-serverless-flywa
 
 app_image = "docker.pkg.github.com/sharebuilder-401k/aurora-serverless-flyway-db/flyway"
 
-app_version = "0.0.0.279373612"
+app_version = "0.0.0"
