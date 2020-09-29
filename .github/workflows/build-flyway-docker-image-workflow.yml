@@ -15,13 +15,10 @@ jobs:
 
       - name: Build Flyway Docker Image
         run: |
-          image_tag="$(cat config.json | jq -r '.flywayVersion')"
-          echo ${GITHUB_REF}
-          if [[ $GITHUB_REF != 'refs/head/master' ]]; then
+          image_tag="$(jq -r '.flywayVersion' config.json)"
+          if [[ $GITHUB_REF != 'refs/heads/master' ]]; then
             image_tag="${image_tag}.${GITHUB_RUN_ID}"
           fi
-
-          echo "${image_tag}"
 
           echo "${{ github.token }}" | docker login docker.pkg.github.com -u ${GITHUB_ACTOR} --password-stdin
           docker build -t "docker.pkg.github.com/sharebuilder-401k/aurora-serverless-flyway-db/flyway:${image_tag}" ./docker
@@ -29,10 +26,16 @@ jobs:
           docker push docker.pkg.github.com/sharebuilder-401k/aurora-serverless-flyway-db/flyway:${image_tag}
           docker push docker.pkg.github.com/sharebuilder-401k/aurora-serverless-flyway-db/flyway:latest
 
-          sed -i "s/app_version =.*/app_version = \"${image_tag}\"/" "infrastructure/flyway-fargate-task/var-files/us-west-2.tfvars"
+          gitbot_email=$(jq -r '.gitbotEmail // "aurora.gitbot@example.com"' config.json)
+          gitbot_name=$(jq -r '.gitbotName // "aurora-gitbot"' config.json)
+          git config user.email ${gitbot_email}
+          git config user.name ${gitbot_name}
+          regions=($(jq -r '.infrastructure // {"us-west-2": {}} | keys[] | @sh' config.json))
 
-          git config user.email aurora.gitbot@example.com
-          git config user.name aurora-gitbot
-          git add "infrastructure/flyway-fargate-task/var-files/us-west-2.tfvars"
+          for region in "${regions[@]}"; do
+            sed -i "s/app_version =.*/app_version = \"${image_tag}\"/" "infrastructure/flyway-fargate-task/var-files/${region}.tfvars"
+            git add "infrastructure/flyway-fargate-task/var-files/${region}.tfvars"
+          done
+
           git commit -m "Updating flyway app_version from GitHub Actions"
           git push https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
