@@ -1,0 +1,23 @@
+name: Build Flyway Docker Image for ECS Task
+on:
+  repository_dispatch:
+    types: build_flyway
+  push:
+    paths:
+    - 'docker/**'
+jobs:
+  build-flyway:
+    runs-on: ubuntu-latest
+    env:
+      IMAGE_TAG: ${{ github.sha }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Build Flyway Docker Image
+        run: |
+         docker build -t docker.pkg.github.com/sharebuilder-401k/aurora-serverless-flyway-db/flyway:$IMAGE_TAG ./docker
+         docker tag docker.pkg.github.com/sharebuilder-401k/aurora-serverless-flyway-db/flyway:$IMAGE_TAG docker.pkg.github.com/sharebuilder-401k/aurora-serverless-flyway-db/flyway:latest
+         docker push docker.pkg.github.com/sharebuilder-401k/aurora-serverless-flyway-db/flyway:$IMAGE_TAG
+         docker push docker.pkg.github.com/sharebuilder-401k/aurora-serverless-flyway-db/flyway:latest
