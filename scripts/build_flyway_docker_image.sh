@@ -13,7 +13,7 @@ docker_owner="$(jq -r '.dockerOwner // "sharebuilder-401k"' config.json)"
 docker_repo="$(jq -r '.dockerRepo // "aurora-serverless-flyway-db"' config.json)"
 
 # Login to
-echo "${{ github.token }}" | docker login "${docker_registry}" -u "${GITHUB_ACTOR}" --password-stdin
+echo "${GITHUB_TOKEN}" | docker login "${docker_registry}" -u "${GITHUB_ACTOR}" --password-stdin
 docker build -t "${docker_registry}/${docker_owner}/${docker_repo}/flyway:${image_tag}" ./docker
 docker tag "${docker_registry}/${docker_owner}/${docker_repo}/flyway:${image_tag}" "${docker_registry}/${docker_owner}/${docker_repo}/flyway:latest"
 docker push "${docker_registry}/${docker_owner}/${docker_repo}/flyway:${image_tag}"
