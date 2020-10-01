@@ -8,7 +8,7 @@
 	"dockerRegistry": "docker.pkg.github.com",
 	"dockerOwner": "sharebuilder-401k",
 	"dockerRepo": "aurora-serverless-flyway-db",
-	"dockerAuthTokenName": "GITHUB_TOKEN",
+	"dockerAuthTokenName": "AUTH_GITHUB_TOKEN",
 	"infrastructure": {
 		"us-west-2": {
 			"terraformBucket": "aurora-flyway-terraform-us-west-2",
