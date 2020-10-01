@@ -14,28 +14,4 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Build Flyway Docker Image
-        run: |
-          image_tag="$(jq -r '.flywayVersion // 0.0.0' config.json)"
-          if [[ $GITHUB_REF != 'refs/heads/master' ]]; then
-            image_tag="${image_tag}.${GITHUB_RUN_ID}"
-          fi
-
-          echo "${{ github.token }}" | docker login docker.pkg.github.com -u ${GITHUB_ACTOR} --password-stdin
-          docker build -t "docker.pkg.github.com/sharebuilder-401k/aurora-serverless-flyway-db/flyway:${image_tag}" ./docker
-          docker tag docker.pkg.github.com/sharebuilder-401k/aurora-serverless-flyway-db/flyway:${image_tag} docker.pkg.github.com/sharebuilder-401k/aurora-serverless-flyway-db/flyway:latest
-          docker push docker.pkg.github.com/sharebuilder-401k/aurora-serverless-flyway-db/flyway:${image_tag}
-          docker push docker.pkg.github.com/sharebuilder-401k/aurora-serverless-flyway-db/flyway:latest
-
-          gitbot_email="$(jq -r '.gitbotEmail // "aurora.gitbot@example.com"' config.json)"
-          gitbot_name="$(jq -r '.gitbotName // "aurora-gitbot"' config.json)"
-          git config user.email ${gitbot_email}
-          git config user.name ${gitbot_name}
-          regions=($(jq -r '.infrastructure // {"us-west-2": {}} | keys[]' config.json))
-
-          for region in "${regions[@]}"; do
-            sed -i "s/app_version =.*/app_version = \"${image_tag}\"/" "infrastructure/flyway-fargate-task/var-files/${region}.tfvars"
-            git add "infrastructure/flyway-fargate-task/var-files/${region}.tfvars"
-          done
-
-          git commit -m "Updating flyway app_version from GitHub Actions"
-          git push https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
+        run: ./scripts/build_flyway_docker_image.sh

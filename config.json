@@ -3,8 +3,12 @@
 	"githubOwner": "sharebuilder-401k",
 	"githubRepo": "aurora-serverless-flyway-db",
 	"gitbotEmail": "aurora.gitbot@example.com",
-	"githubTokenName": "GITHUB_AURORA_ACTIONS_TOKEN",
 	"gitbotName": "aurora-gitbot",
+	"githubTokenName": "GITHUB_AURORA_ACTIONS_TOKEN",
+	"dockerRegistry": "docker.pkg.github.com",
+	"dockerOwner": "sharebuilder-401k",
+	"dockerRepo": "aurora-serverless-flyway-db",
+	"dockerAuthTokenName": "GITHUB_TOKEN",
 	"infrastructure": {
 		"us-west-2": {
 			"terraformBucket": "aurora-flyway-terraform-us-west-2",
