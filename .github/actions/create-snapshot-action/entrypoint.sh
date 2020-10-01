@@ -12,7 +12,7 @@ CreateClusterSnapshot $db_cluster $db_snapshot $region
 # Update snapshot name in metadata
 echo "Updating snapshot version tag"
 eval "cat metadata.json | \
-  jq '.[${region}].snapshot = \"${db_snapshot}\"' \
+  jq '.["${region}"].snapshot = \"${db_snapshot}\"' \
   > metadata_tmp.json \
   && mv metadata_tmp.json metadata.json"
 cat metadata.json
