@@ -7,7 +7,7 @@
 	"gitbotName": "aurora-gitbot",
 	"infrastructure": {
 		"us-west-2": {
-			"terraformBucket": "aurora-terraform-us-west-2",
+			"terraformBucket": "aurora-flyway-terraform-us-west-2",
 			"auroraDB": {
 				"dbClusterName": "auroradb-cluster",
 				"dbSubnetGroup": "auroradb-subnet-group",

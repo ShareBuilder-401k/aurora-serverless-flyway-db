@@ -56,7 +56,7 @@ select action in "${actions[@]}"; do
       echo ""
       echo "Infrastructure: ${infrastructure_folder}"
 
-      terraform_bucket="$(jq --arg region "${region}" -r '.infrastructure[$region].terraformBucket // "aurora-terraform-us-west-2"' config.json)"
+      terraform_bucket="$(jq --arg region "${region}" -r '.infrastructure[$region].terraformBucket // "aurora-flyway-terraform-us-west-2"' config.json)"
 
       client_payload="{\"region\": \"${region}\", \"bucket\": \"${terraform_bucket}\", \"infrastructure_folder\": \"${infrastructure_folder}\"}"
 
