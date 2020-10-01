@@ -13,9 +13,7 @@ docker_owner="$(jq -r '.dockerOwner // "sharebuilder-401k"' config.json)"
 docker_repo="$(jq -r '.dockerRepo // "aurora-serverless-flyway-db"' config.json)"
 
 # Login to
-docker_auth_token_name="$(jq -r '.dockerAuthTokenName // "AUTH_GITHUB_TOKEN"' config.json)"
-eval "auth_token=\$${docker_auth_token_name}"
-echo "${auth_token}" | docker login "${docker_registry}" -u "${GITHUB_ACTOR}" --password-stdin
+echo "${DOCKER_AUTH_TOKEN}" | docker login "${docker_registry}" -u "${GITHUB_ACTOR}" --password-stdin
 docker build -t "${docker_registry}/${docker_owner}/${docker_repo}/flyway:${image_tag}" ./docker
 docker tag "${docker_registry}/${docker_owner}/${docker_repo}/flyway:${image_tag}" "${docker_registry}/${docker_owner}/${docker_repo}/flyway:latest"
 docker push "${docker_registry}/${docker_owner}/${docker_repo}/flyway:${image_tag}"
@@ -34,4 +32,4 @@ for region in "${regions[@]}"; do
 done
 
 git commit -m "Updating flyway app_version from GitHub Actions"
-git push "https://${GITHUB_ACTOR}:${AUTH_GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+git push "https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"

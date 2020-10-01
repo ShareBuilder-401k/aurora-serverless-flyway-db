@@ -15,5 +15,5 @@ jobs:
 
       - name: Build Flyway Docker Image
         env:
-          AUTH_GITHUB_TOKEN: ${{ github.token }}
+          DOCKER_AUTH_TOKEN: ${{ github.token }}
         run: ./scripts/build_flyway_docker_image.sh
