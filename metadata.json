@@ -1,3 +1,5 @@
 {
-  "snapshot": "auroradb-cluster-snapshot-20200928-203655Z"
+  "us-west-2": {
+    "snapshot": "auroradb-cluster-snapshot-20200928-203655Z"
+  }
 }

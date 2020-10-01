@@ -26,8 +26,8 @@ jobs:
           docker push docker.pkg.github.com/sharebuilder-401k/aurora-serverless-flyway-db/flyway:${image_tag}
           docker push docker.pkg.github.com/sharebuilder-401k/aurora-serverless-flyway-db/flyway:latest
 
-          gitbot_email=$(jq -r '.gitbotEmail // "aurora.gitbot@example.com"' config.json)
-          gitbot_name=$(jq -r '.gitbotName // "aurora-gitbot"' config.json)
+          gitbot_email="$(jq -r '.gitbotEmail // "aurora.gitbot@example.com"' config.json)"
+          gitbot_name="$(jq -r '.gitbotName // "aurora-gitbot"' config.json)"
           git config user.email ${gitbot_email}
           git config user.name ${gitbot_name}
           regions=($(jq -r '.infrastructure // {"us-west-2": {}} | keys[]' config.json))

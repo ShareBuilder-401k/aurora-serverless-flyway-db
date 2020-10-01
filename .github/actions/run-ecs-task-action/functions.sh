@@ -9,17 +9,19 @@
 # @arg $2 LAUNCH_TYPE - Launch Type for the task. EC2 or FARGATE
 # @arg $3 CLUSTER - The ECS cluster to run the task in
 # @arg $4 SUBNETS = Comma separated list of subnets the task can be run in
-# @arg $5 SECURITY_GROUPS - Comma separated list of security groups to assign to the task
-# @arg $6 REGION - the AWS region to run the task in
-# @arg $7 COMMAND_OVERRIDE - Optional argument. The command to run on the container instead of the default command
+# @arg $5 IS_PUBLIC_SUBNET - Are the subnets public? Does a Public IP need to be assigned to the ECS taks?
+# @arg $6 SECURITY_GROUPS - Comma separated list of security groups to assign to the task
+# @arg $7 REGION - the AWS region to run the task in
+# @arg $8 COMMAND_OVERRIDE - Optional argument. The command to run on the container instead of the default command
 function RunECSTask() {
   TASK_DEFINITION_FAMILY="${1}"
   LAUNCH_TYPE="${2}"
   CLUSTER="${3}"
   SUBNETS="${4}"
-  SECURITY_GROUPS="${5}"
-  REGION="${6}"
-  COMMAND_OVERRIDE="${7}"
+  IS_PUBLIC_SUBNET="${5}"
+  SECURITY_GROUPS="${6}"
+  REGION="${7}"
+  COMMAND_OVERRIDE="${8}"
 
   if [[ -z $TASK_DEFINITION_FAMILY ]]; then
     echo "ERROR: expected TASK_DEFINITION_FAMILY to be passed to RunECSTask"
@@ -33,6 +35,8 @@ function RunECSTask() {
   elif [[ -z $SUBNETS ]]; then
     echo "ERROR: expected SUBNETS to be passed to RunECSTask"
     exit 1
+  elif [[ -z $IS_PUBLIC_SUBNET ]]; then
+    echo "ERROR: expected IS_PUBLIC_SUBNET to be passed to RunECSTask"
   elif [[ -z $SECURITY_GROUPS ]]; then
     echo "ERROR: expected SECURITY_GROUPS to be passed to RunECSTask"
     exit 1
@@ -48,13 +52,11 @@ function RunECSTask() {
     OVERRIDE_STRING="--overrides {\"containerOverrides\":[{\"name\":\"${TASK_DEFINITION_FAMILY//-family/}\",\"command\":[\"${COMMAND_OVERRIDE// /\",\"}\"]}]}"
   fi
 
-  # # Dev uses a public subnet and needs a public IP to access the internet
-  # if [[ $ENV == "dev" ]]; then
-  #   ASSIGN_PUBLIC_IP_STRING="ENABLED"
-  # else
-  #   ASSIGN_PUBLIC_IP_STRING="DISABLED"
-  # fi
-  ASSIGN_PUBLIC_IP_STRING="ENABLED"
+  if [[ ${IS_PUBLIC_SUBNET} = true ]]; then
+    ASSIGN_PUBLIC_IP_STRING="ENABLED"
+  else
+    ASSIGN_PUBLIC_IP_STRING="DISABLED"
+  fi
 
   SECURITY_GROUP_STRING=`GetSGIdsFromNames $SECURITY_GROUPS $REGION`
   SUBNET_STRING=`GetSubnetIdsFromNames $SUBNETS $REGION`

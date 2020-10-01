@@ -14,6 +14,9 @@ inputs:
   task_subnets:
     description: A comma separated list of subnet names in which the task can be started
     required: true
+  is_public_subnet:
+    description: Are the task subnets public? (ECS Task needs Public IP assigned)
+    required: true
   task_security_groups:
     description: A comma separated list of Security Group names to assign to the task
     required: true
@@ -32,6 +35,7 @@ runs:
     - ${{ inputs.task_launch_type }}
     - ${{ inputs.task_cluster }}
     - ${{ inputs.task_subnets }}
+    - ${{ inputs.is_public_subnet }}
     - ${{ inputs.task_security_groups }}
     - ${{ inputs.task_region }}
     - ${{ inputs.task_command_override }}

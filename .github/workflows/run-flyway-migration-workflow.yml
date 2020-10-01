@@ -17,10 +17,11 @@ jobs:
       - name: Run Flyway Migration
         uses: ./.github/actions/run-ecs-task-action
         with:
-          task_definition_family: flyway-migration-family
-          task_launch_type: FARGATE
-          task_cluster: ecs-cluster
-          task_subnets: default-us-west-2a,default-us-west-2b,default-us-west-2c
-          task_security_groups: flyway-fargate-sg,auroradb-sg
+          task_definition_family: ${{ github.event.client_payload.task_definition_family }}
+          task_launch_type: ${{ github.event.client_payload.task_launch_type }}
+          task_cluster: ${{ github.event.client_payload.task_cluster }}
+          task_subnets: ${{ github.event.client_payload.task_subnets }}
+          is_public_subnet: ${{ github.event.client_payload.is_public_subnet }}
+          task_security_groups: ${{ github.event.client_payload.task_security_groups }}
           task_region: ${{ github.event.client_payload.region }}
           task_command_override: /flyway/scripts/flyway-rds-migration.sh ${{ github.event.client_payload.branch }}

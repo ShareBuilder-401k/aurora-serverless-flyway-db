@@ -1,8 +1,26 @@
 {
 	"flywayVersion": "0.0.0",
+	"githubOwner": "sharebuilder-401k",
+	"githubRepo": "aurora-serverless-flyway-db",
 	"gitbotEmail": "aurora.gitbot@example.com",
+	"githubTokenName": "GITHUB_AURORA_ACTIONS_TOKEN",
 	"gitbotName": "aurora-gitbot",
 	"infrastructure": {
-		"us-west-2": {}
+		"us-west-2": {
+			"terraformBucket": "aurora-terraform-us-west-2",
+			"auroraDB": {
+				"dbClusterName": "auroradb-cluster",
+				"dbSubnetGroup": "auroradb-subnet-group",
+				"vpcSecurityGroups": "auroradb-sg"
+			},
+			"flywayTask": {
+				"taskDefinitionFamily": "flyway-migration-family",
+				"taskLaunchType": "FARGATE",
+				"taskCluster": "ecs-cluster",
+				"taskSubnets": "default-us-west-2a,default-us-west-2b,default-us-west-2c",
+				"taskSecurityGroups": "flyway-fargate-sg,auroradb-sg",
+				"isPublicSubnet": true
+			}
+		}
 	}
 }
