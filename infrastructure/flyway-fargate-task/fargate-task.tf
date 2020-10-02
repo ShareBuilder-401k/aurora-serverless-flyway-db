@@ -21,6 +21,8 @@ data "template_file" "taskdef_template" {
     app_db_host                      = data.aws_rds_cluster.auroradb_cluster.endpoint
     app_db_name                      = data.aws_rds_cluster.auroradb_cluster.database_name
     app_repository_deploy_key_secret = var.repository_deploy_key_secret
+    app_repository_owner             = var.repository_owner
+    app_repository_path              = var.repository_path
     log_group                        = var.cloudwatch_log_group
     credentials                      = data.aws_secretsmanager_secret.registry_credentials.arn
   }

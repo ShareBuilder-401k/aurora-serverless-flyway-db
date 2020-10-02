@@ -57,6 +57,16 @@ variable "repository_deploy_key_secret" {
   description = "The name of the AWS SecretsManager Secret holding the GitHub Deploy Key (SSH Key)"
 }
 
+variable "repository_owner" {
+  type        = string
+  description = "The owner of the git repository. Ex: sharebuilder-401k for https://github.com/sharebuilder-401k/aurora-serverless-flyway-db"
+}
+
+variable "repository_path" {
+  type        = string
+  description = "The path of the git repository. Ex: aurora-serverless-flyway-db for https://github.com/sharebuilder-401k/aurora-serverless-flyway-db"
+}
+
 variable "cloudwatch_log_group" {
   type        = string
   description = "The name of the cloudwatch log group to send the ecs-logs to"
