@@ -30,6 +30,22 @@ function selectInfrastructureFolder() {
   done
 }
 
+function selectBranch() {
+  branches=()
+  eval "$(git for-each-ref --shell --format='branches+=(%(refname:lstrip=3))' refs/remotes/origin/)"
+
+  PS3="Enter a number: "
+  select branch in "${branches[@]}"; do
+    for item in "${branches[@]}"; do
+      if [[ ${item} == ${branch} ]]; then
+        echo "${branch}"
+        break 2
+      fi
+    done
+    echo "Invalid Entry. Please select a number between 1 and ${#branches[@]}" >&2
+  done
+}
+
 echo "Select Workflow to trigger:"
 
 PS3="Enter a number: "
@@ -47,12 +63,12 @@ select action in "${actions[@]}"; do
       echo ""
 
       echo "Select an AWS Region:"
-      region=$(loadRegionConfig)
+      region="$(loadRegionConfig)"
       echo "Region: ${region}"
       echo ""
 
       echo "Select Infrastructure to deploy"
-      infrastructure_folder=$(selectInfrastructureFolder)
+      infrastructure_folder="$(selectInfrastructureFolder)"
       echo ""
       echo "Infrastructure: ${infrastructure_folder}"
 
@@ -67,13 +83,13 @@ select action in "${actions[@]}"; do
       echo ""
 
       echo "Select an AWS Region:"
-      region=$(loadRegionConfig)
+      region="$(loadRegionConfig)"
       echo "Region: ${region}"
       echo ""
 
-      timestamp=$(date -u +"%Y%m%d-%H%M%SZ")
-      aurora_config=$(jq --arg region "${region}" -r '.infrastructure[$region].auroraDB' config.json)
-      db_cluster_name=$(jq -r '.dbClusterName // "auroradb-cluster"' <<< "${aurora_config}")
+      timestamp="$(date -u +"%Y%m%d-%H%M%SZ")"
+      aurora_config="$(jq --arg region "${region}" -r '.infrastructure[$region].auroraDB' config.json)"
+      db_cluster_name="$(jq -r '.dbClusterName // "auroradb-cluster"' <<< "${aurora_config}")"
       db_snapshot_name="${db_cluster_name}-snapshot-${timestamp}"
 
       client_payload="{\"db_cluster_name\": \"${db_cluster_name}\", \"db_snapshot_name\": \"${db_snapshot_name}\", \"db_cluster_region\": \"${region}\"}"
@@ -85,7 +101,7 @@ select action in "${actions[@]}"; do
       echo ""
 
       echo "Select an AWS Region:"
-      region=$(loadRegionConfig)
+      region="$(loadRegionConfig)"
       echo "Region: ${region}"
       echo ""
 
@@ -109,8 +125,13 @@ select action in "${actions[@]}"; do
       echo ""
 
       echo "Select an AWS Region:"
-      region=$(loadRegionConfig)
+      region="$(loadRegionConfig)"
       echo "Region: ${region}"
+      echo ""
+
+      echo "Select a branch:"
+      branch="$(selectBranch)"
+      echo "Branch: ${branch}"
       echo ""
 
       flyway_config="$(jq --arg region "${region}" -r '.infrastructure[$region].flywayTask' config.json)"
@@ -121,7 +142,7 @@ select action in "${actions[@]}"; do
       is_public_subnet="$(jq -r 'if has("isPublicSubnet") then .isPublicSubnet else true end' <<< "${flyway_config}")"
       task_security_groups="$(jq -r '.taskSecurityGroups // "flyway-fargate-sg,auroradb-sg"' <<< "${flyway_config}")"
 
-      client_payload="{\"branch\": \"master\", \"region\": \"${region}\", \"task_definition_family\": \"${task_definition_family}\", \"task_launch_type\": \"${task_launch_type}\", \"task_cluster\": \"${task_cluster}\", \"task_subnets\": \"${task_subnets}\", \"is_public_subnet\": ${is_public_subnet}, \"task_security_groups\": \"${task_security_groups}\"}"
+      client_payload="{\"branch\": \"${branch}\", \"region\": \"${region}\", \"task_definition_family\": \"${task_definition_family}\", \"task_launch_type\": \"${task_launch_type}\", \"task_cluster\": \"${task_cluster}\", \"task_subnets\": \"${task_subnets}\", \"is_public_subnet\": ${is_public_subnet}, \"task_security_groups\": \"${task_security_groups}\"}"
 
       break
       ;;

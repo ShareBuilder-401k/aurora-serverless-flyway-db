@@ -12,24 +12,30 @@ docker_registry="$(jq -r '.dockerRegistry // "docker.pkg.github.com"' config.jso
 docker_owner="$(jq -r '.dockerOwner // "sharebuilder-401k"' config.json)"
 docker_repo="$(jq -r '.dockerRepo // "aurora-serverless-flyway-db"' config.json)"
 
-# Login to
+# Login to Docker Registry
 echo "${DOCKER_AUTH_TOKEN}" | docker login "${docker_registry}" -u "${GITHUB_ACTOR}" --password-stdin
+
+# Build Docker Image from /docker and tag as latest. Push both to Docker Registry
 docker build -t "${docker_registry}/${docker_owner}/${docker_repo}/flyway:${image_tag}" ./docker
 docker tag "${docker_registry}/${docker_owner}/${docker_repo}/flyway:${image_tag}" "${docker_registry}/${docker_owner}/${docker_repo}/flyway:latest"
 docker push "${docker_registry}/${docker_owner}/${docker_repo}/flyway:${image_tag}"
 docker push "${docker_registry}/${docker_owner}/${docker_repo}/flyway:latest"
 
+# Configure git using gitbot name and email from config.json
 gitbot_email="$(jq -r '.gitbotEmail // "aurora.gitbot@example.com"' config.json)"
 gitbot_name="$(jq -r '.gitbotName // "aurora-gitbot"' config.json)"
 git config user.email "${gitbot_email}"
 git config user.name "${gitbot_name}"
 
+# Get list of regions used for infrastructure from config.json
 regions=($(jq -r '.infrastructure // {"us-west-2": {}} | keys[]' config.json))
 
+# Update app_version terraform variable in each region to have newly built image_tag. Stage changes for commit
 for region in "${regions[@]}"; do
   sed -i "s/app_version =.*/app_version = \"${image_tag}\"/" "infrastructure/flyway-fargate-task/var-files/${region}.tfvars"
   git add "infrastructure/flyway-fargate-task/var-files/${region}.tfvars"
 done
 
+# Commit changes to github as gitbot user
 git commit -m "Updating flyway app_version from GitHub Actions"
 git push "https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
