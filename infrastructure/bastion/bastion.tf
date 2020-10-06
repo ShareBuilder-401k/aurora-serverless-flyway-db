@@ -52,9 +52,14 @@ resource "aws_security_group" "bastion-sg" {
   }
 }
 
+data "aws_s3_bucket_object" "bastion_public_key_file" {
+  bucket = var.public_key_bucket
+  key    = var.public_key_path
+}
+
 resource "aws_key_pair" "bastion_key" {
   key_name   = var.bastion_key_name
-  public_key = file(var.bastion_public_key_file)
+  public_key = data.aws_s3_bucket_object.bastion_public_key_file.body
 }
 
 resource "aws_instance" "bastion-host" {

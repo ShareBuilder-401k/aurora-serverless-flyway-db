@@ -30,9 +30,14 @@ variable "bastion_key_name" {
   default     = "bastion-key-pair"
 }
 
-variable "bastion_public_key_file" {
+variable "public_key_bucket" {
   type        = string
-  description = "The path to the public key file for the Bastion Key Pair"
+  description = "The S3 bucket that the public key file for the bastion key pair is stored in"
+}
+
+variable "public_key_path" {
+  type        = string
+  description = "The S3 path to the public key file to be used for the bastion key pair"
 }
 
 variable "bastion_host_name" {
