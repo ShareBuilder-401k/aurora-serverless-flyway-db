@@ -23,6 +23,11 @@
 				"taskSubnets": "default-us-west-2a,default-us-west-2b,default-us-west-2c",
 				"taskSecurityGroups": "flyway-fargate-sg,auroradb-sg",
 				"isPublicSubnet": true
+			},
+			"bastion": {
+				"bastionHostName": "bastion-host",
+				"privateKeyBucket": "sharebuilder401k-ssh-keys-us-west-2",
+				"privateKeyPath": "private/bastion-host-key"
 			}
 		}
 	}
