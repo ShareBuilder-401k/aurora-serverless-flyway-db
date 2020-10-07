@@ -1,10 +1,17 @@
 # Aurora Serverless Flyway DB
 
-Aurora Serverless Flyway DB is a template project that is used to setup an [Amazon Aurora Serverless Database](https://aws.amazon.com/rds/aurora/serverless/) that is integrated with [Flyway](https://flywaydb.org/) to manage database migrations. This integration is accomplished through the use of an ECS task along with the help of GitHub Actions.
+Aurora Serverless Flyway DB is a template project that is used to setup an [Amazon Aurora Serverless Database](https://aws.amazon.com/rds/aurora/serverless/) that is integrated with [Flyway](https://flywaydb.org/) to manage database migrations. This integration is accomplished through the use of an ECS Fargate task along with the help of GitHub Actions.
 
 ## Contents
-- [Overview](#Overview)
+- [Overview](#overview)
+  - [AWS](#aws)
+  - [Terraform](#terraform)
+  - [Flyway](#flyway)
+  - [GitHub Actions](#github-actions)
 - [Getting Started](#getting-started)
+  - [Repository Setup](#repository-setup)
+  - [Secrets Manager Setup](#secrets-manager-setup)
+  - [GitHub Actions Config Setup](#github-actions-config-setup)
 
 ## Overview
 
@@ -34,15 +41,19 @@ In order to limit access to this database, an [Amazon EC2](https://aws.amazon.co
 
 [Terraform](https://www.terraform.io/) is an infrastructure as code solution used to provision and manage all of the AWS infrastructure used in this project, other than S3 and Secrets Manager resources. The Terraform files are located in the `infrastructure/` folder by each main component in a subfolder. Available variables and default values can be found in the `variables.tf` files of each subfolder. They can be configured using `<region>.tfvars` files in the `var-files/` folder.
 
+![terraform-folder-structure](assets/terraform-folder-structure.png)
+
 ### Flyway
 
-Flyway is an open source tool for managing database migrations. Flyway will search through all files in the `sql/` folder finding any file that matches `V<version>__<Version_Description>.sql` for versioned migrations or `R__<Procedure_name>.sql` for repeatable migrations. Flyway is only concerned with the names of the individual files and does not actually care about the structure. The structure is just for developers to better organize their code.
+[Flyway](https://flywaydb.org/) is an open source tool for managing database migrations. Flyway will search through all files in the `sql/` folder finding any file that matches `V<version>__<Version_Description>.sql` for versioned migrations or `R__<Procedure_name>.sql` for repeatable migrations. Flyway is only concerned with the names of the individual files and does not actually care about the structure. The structure is just for developers to better organize their code.
 
-Versioned migrations are migrations that are executed in order according to their version. This is important to keep in mind when creating a migration that could depend on another migration (ex: Table A column references Table B so the Table A migration would need to have a lower version and be applied first).
+Versioned migrations are migrations that are executed in order according to their version. This is important to keep in mind when creating a migration that could depend on another migration (ex: Table A column references Table B so the Table A migration would need to have a lower version and be applied first). Flyway keeps track of the current database version using the `flyway_schema_history` table.
 
 Repeatable migrations are migrations that are reapplied every time their checksum changes (every time they are modified). These are good for database objects that can be maintained in a single file in version control, such as stored procedures and bulk inserts. Repeatable migrations are always applied after versioned migrations.
 
 For this project, flyway will search through the `sql/` directory to find all filenames matching either `V<version>__<Version_Description>.sql` for versioned migrations or `R__<Repeatable_Description>.sql` fro repeatable migrations.
+
+![flyway-folder-structure](assets/flyway-folder-structure.png)
 
 ### GitHub Actions
 
@@ -51,6 +62,63 @@ For this project, flyway will search through the `sql/` directory to find all fi
 ## Getting Started
 
 This section will go over the steps to setup this project and get a database up and running.
+
+### Repository Setup
+
+1. Above this repository's file list, click the **Use this template** button.
+2. Follow the prompts to set the repository owner, name, and visibility and to optionally include all branches if desired.
+3. In the new repository, navigate to **Actions** from the top menu bar and click **Enable Actions on this repository**.
+4. Navigate to **Settings -> Secrets** and click **New secret**
+5. Add a secret for `AWS_ACCESS_KEY_ID` for the AWS account credentials.
+6. Repeat step 4 and add a secret for `AWS_SECRET_ACCESS_KEY` for the AWS account credentials.
+7. Navigate to **Settings -> Deploy Keys** and click **Add deploy key**
+8. In a terminal, run `ssh-keygen -m PEM -t rsa -b 4096 -C "<repository_name> read-repository" -f <file_path>`
+   - Example: `ssh-keygen -m PEM -t rsa -b 4096 -C "aurora-serverless-flyway-db read-repository" -f ~/.ssh/aurora-serverless-flyway-db`
+9. Back in GitHub, copy the contents of the public key file generated from the `ssh-keygen` command into the **Key** section. The public key file will be in the format of `<file_path>.pub`.
+10. Add a title and click **Add key**. Write access is not needed for this deploy key.
+11. Click the profile picture in the top right corner and click **Settings**
+12. Click **Developer settings** in the settings menu.
+13. Select **Personal access tokens** and click **Generate new token**.
+14. Select `repo` and `read:packages` scope and click **Generate token**.
+15. Copy the generated token and store it in a secure location.
+
+### Secrets Manager Setup
+
+1. Login to the AWS console.
+2. Navigate to **Services -> Secrets Manager**.
+3. Click **Store a new secret**.
+4. Select **Other type of secrets**.
+5. Under **Specify the key/value pairs to be stred in this secret**, select **Plaintext** and copy the contents of the private key for the deploy key generated in step 8 of [Repository Setup](#repository-setup).
+6. Select and encryption key or use the `DefaultEncryptionKey` and click **Next**.
+7. Specify a **Secret name** and **Description** for the secret and click **Next**.
+    - I like to name my secrets describing their use separating descriptors by the `@` symbol. Ex: `github@<repo_owner>@<repo_path>@repository-deploy-key`.
+8. Select **Disable automatic rotation** and click **Next**.
+9. Click **Store**.
+10. Repeat steps 3-9 to store the personal access token from step 15 of [Repository Setup](#repository-setup). Instead of storing the value as plaintext, store it as **Secret key/value**. The pairs are:
+    - key: `username`, value: the username used to create the personal access token
+    - key: `password`, value: the personal access token from the generate token step
+      - Example secret name: `github@<github_user>@registry_token`
+11. Repeat steps 3-9 to store a username and secure password key value pair for the master credentials of the database.
+    - Example secret name: `<db_engine>@<dbname>@<db_table>@<db_user_name>`
+      -  Ex: `postgresql@auroradb@master@sqladmin`
+12. Repeat steps 3-9 to store username and secure password key value pairs for any additional database users. This process will also be used to add new users during development.
+    - The additional users used in the sample sql code are:
+      - `postgresql@auroradb@master@read_only`
+      - `postgresql@auroradb@sample@sample_application`
+
+### GitHub Actions Config Setup
+
+This project uses a `config.json` file to configure values for the GitHub Actions Workflow. Since GitHub Actions does not currently support manually invoking workflows from the GitHub actions console, `trigger_workflow.sh`, a script to invoke workflows through the use of [`repository_dispatch`](https://docs.github.com/en/free-pro-team@latest/actions/reference/events-that-trigger-workflows#repository_dispatch) events, has been included with the project. This script will parse `config.json` to retrieve values to build the HTTP request and payload to generate the `repository_dispatch` event.
+
+The `config.json` values are as follows:
+
+| property | description | required | default |
+| -------- | ----------- | -------- | ------- |
+| `flywayVersion` | The version of the docker image generated by the `build-flyway-docker-image-workflow` to be used by the ECS Fargate Task | true | `"0.0.0"` |
+| `githubOwner` | The owner of the GitHub repository. Could be a user or organization. | true | `"CHANGE ME"` |
+| `githubRepo` | The path of the GitHub repository. Does not include owner. | true | `"CHANGE ME"` |
+| `gitbotEmail` | The email used to make automated commits to this repo (Updating `app_version` in `infrastructure/flyway-fargate-task/var-files/*.tfvars` on new flyway image build, updating metadata reference on new RDS snapshot creation, or updating `README.md` with the database schema from running flyway on `sql/`) | false | `"aurora.gitbot@example.com"` |
+
 
 # Database Documentation
 
