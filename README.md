@@ -11,7 +11,20 @@ Aurora Serverless Flyway DB is a template project that is used to setup an [Amaz
 - [Getting Started](#getting-started)
   - [Repository Setup](#repository-setup)
   - [Secrets Manager Setup](#secrets-manager-setup)
+  - [Terraform Infrastructure Setup](#terraform-infrastructure-setup)
+    - [Aurora-DB](#aurora-db)
+    - [ECS-Cluster](#ecs-cluster)
+    - [Fargate-IAM](#fargate-iam)
+    - [Flyway-Fargate-Task](#flyway-fargate-task)
+    - [Bastion](#bastion)
   - [GitHub Actions Config Setup](#github-actions-config-setup)
+    - [Infrastructure Config Object](#infrastructure-config-object)
+    - [Infrastructure Region Config Object](#infrastructure-region-config-object)
+    - [Aurora DB Config Object](#aurora-db-config-object)
+    - [Flyway Task Config Object](#flyway-task-config-object)
+    - [Bastion Config Object](#bastion-config-object)
+  - [Deploy Infrastructure](#deploy-infrastructure)
+    - [Destroy Infrastructure](#destroy-infrastructure)
 
 ## Overview
 
@@ -49,7 +62,7 @@ In order to limit access to this database, an [Amazon EC2](https://aws.amazon.co
 
 Versioned migrations are migrations that are executed in order according to their version. This is important to keep in mind when creating a migration that could depend on another migration (ex: Table A column references Table B so the Table A migration would need to have a lower version and be applied first). Flyway keeps track of the current database version using the `flyway_schema_history` table.
 
-Repeatable migrations are migrations that are reapplied every time their checksum changes (every time they are modified). These are good for database objects that can be maintained in a single file in version control, such as stored procedures and bulk inserts. Repeatable migrations are always applied after versioned migrations.
+Repeatable migrations are migrations that are reapplied every time their checksum changes (every time the file is modified). These are good for database objects that can be maintained in a single file in version control, such as stored procedures and bulk inserts. Repeatable migrations are always applied after versioned migrations.
 
 For this project, flyway will search through the `sql/` directory to find all filenames matching either `V<version>__<Version_Description>.sql` for versioned migrations or `R__<Repeatable_Description>.sql` fro repeatable migrations.
 
@@ -57,7 +70,7 @@ For this project, flyway will search through the `sql/` directory to find all fi
 
 ### GitHub Actions
 
-[GitHub Actions](https://github.com/features/actions) is a CI/CD solution through GitHub that allows for the creation of workflows for this project. These workflows are used to manage infrastructure using terraform, manage the aurora serverless database through the creation and restoration of database snapshots, trigger a standalone ECS task to run flyway migrations on our database, build the docker image for this repo configured to run flyway from the ECS task, and even generate the database schema as markdown and append it to this `README.md`.
+[GitHub Actions](https://github.com/features/actions) is a CI/CD solution through GitHub that allows for the creation of workflows for this project. These workflows are used to manage infrastructure using terraform, manage the aurora serverless database through the creation and restoration of database snapshots, trigger a standalone ECS task to run flyway migrations on the database, build the docker image for this repo configured to run flyway from the ECS task, and even generate the database schema as markdown and append it to this `README.md` file.
 
 ## Getting Started
 
@@ -81,6 +94,7 @@ This section will go over the steps to setup this project and get a database up 
 13. Select **Personal access tokens** and click **Generate new token**.
 14. Select `repo` and `read:packages` scope and click **Generate token**.
 15. Copy the generated token and store it in a secure location.
+  - This token will be used by the Flyway task to pull the docker image. It can also be used to trigger GitHub actions by creating `repository_dispatch` events.
 
 ### Secrets Manager Setup
 
@@ -89,7 +103,7 @@ This section will go over the steps to setup this project and get a database up 
 3. Click **Store a new secret**.
 4. Select **Other type of secrets**.
 5. Under **Specify the key/value pairs to be stred in this secret**, select **Plaintext** and copy the contents of the private key for the deploy key generated in step 8 of [Repository Setup](#repository-setup).
-6. Select and encryption key or use the `DefaultEncryptionKey` and click **Next**.
+6. Select an encryption key or use the `DefaultEncryptionKey` and click **Next**.
 7. Specify a **Secret name** and **Description** for the secret and click **Next**.
     - I like to name my secrets describing their use separating descriptors by the `@` symbol. Ex: `github@<repo_owner>@<repo_path>@repository-deploy-key`.
 8. Select **Disable automatic rotation** and click **Next**.
@@ -105,6 +119,186 @@ This section will go over the steps to setup this project and get a database up 
     - The additional users used in the sample sql code are:
       - `postgresql@auroradb@master@read_only`
       - `postgresql@auroradb@sample@sample_application`
+
+### Terraform Infrastructure Setup
+
+The Terraform infrastructure is split into the the following sections:
+
+- aurora-db
+- bastion
+- ecs-cluster
+- fargate-iam
+- flyway-fargate-task
+
+Each section has a `variables.tf` file describing the variables that can be provided for the infrastructure and any default values if there are any. These variables are provided via `var-files/<region>.tfvars` files (Ex: `us-west-2.tfvars`).
+
+An S3 Bucket to store Terraform state files is required.
+
+#### **Aurora-DB**
+
+The infrastructure files to create the Aurora DB Cluster. The following resources are created as a part of this infrastructure section.
+
+- AWS DB Subnet Group
+- AWS RDS Cluster
+- AWS Security Group
+
+The Security Group created allows ingress on port 5432 from the same subnet as the database as well as any other resource that is assigned the created security group.
+
+The available variables and default values are as follows:
+
+| name | type | description | default |
+| ---- | ---- | ----------- | ------- |
+| `region` | string | The AWS region | `N/A` |
+| `vpc_name` | string | The name of the VPC to create DB in | `N/A` |
+| `subnet_names` | list(string) | A list of subnets for the DB subnet group | `N/A` |
+| `availability_zones` | list(string) | A list of availability zone the DB can be in | `N/A` |
+| `security_group_names` | list(string) | An optional list of additional security groups to assign to the DB instance | `[]` |
+| `master_credentials_secret` | string | The name of the secret containing the credentials for the DB master user | `N/A` |
+| `db_sg_name` | The name of the DB Security Group that will be created | `auroradb-sg` |
+| `db_subnet_group_name` | string | The name of the DB Subnet Group that will be created | `auroradb-subnet-group` |
+| `db_cluster_name` | string | The name of the AWS RDS Database Cluster | `auroradb-cluster` |
+| `db_name` | string | The name for the database on the Aurora DB Cluster | `auroradb` |
+
+Example config for us-west-2 is provided in `var-files/us-west-2.tfvars`.
+
+```
+region = "us-west-2"
+
+vpc_name = "default-us-west-2"
+
+subnet_names = ["default-us-west-2a", "default-us-west-2b", "default-us-west-2c"]
+
+availability_zones = ["us-west-2a", "us-west-2b", "us-west-2c"]
+
+master_credentials_secret = "postgresql@auroradb@master@sqladmin"
+```
+
+#### **ECS-Cluster**
+
+The infrastructure files to create an ECS Cluster and Cloudwatch Log Group. An existing ECS Cluster may be used if the name is provided in the `config.json` file as specified in the [Flyway Task Config Object](#flyway-task-config-object) subsection of the [GitHub Actions Config Setup](#github-actions-config-setup) section.
+
+The available variables and default values are as follows:
+
+| name | type | description | default |
+| ---- | ---- | ----------- | ------- |
+| `region` | string | The AWS region | `N/A` |
+| `cluster_name` | string | The name of the ECS Cluster | `ecs-cluster` |
+| `ecs_log_group_name` | string | The name of the cloudwatch log group to create for the ECS Cluster | `/ecs_logs` |
+
+Example config for us-west-2 is provided in `var-files/us-west-2.tfvars`.
+
+```
+region = "us-west-2"
+```
+
+#### **Fargate-IAM**
+
+The infrastructure files to create an IAM role. This role can be assumed by an ECS Task and has the permissions for KMS Decryption, Cloudwatch Create Log Stream and Put Log Events, and Secrets Manager Get Secret Value. An existing IAM role may be used so long as it is provided to the [Flyway Fargate Task](#flyway-fargate-task) `task_iam_role` variable.
+
+The available variables and default values are as follows:
+
+| name | type | description | default |
+| ---- | ---- | ----------- | ------- |
+| `region` | string | The AWS region | `N/A` |
+| `flyway_migration_role_name` | string | The AWS IAM Role name for the Flyway Migration ECS Task | `flyway-migration-role` |
+| `flyway_migration_policy_name` | string | The AWS IAM Policy for the Flyway Migration IAM Role | `flyway-migration-policy` |
+
+Example config for us-west-2 is provided in `var-files/us-west-2.tfvars`.
+
+```
+region = "us-west-2"
+```
+
+#### **Flyway-Fargate-Task**
+
+The infrastructure files to create the Flyway Fargate Task to run migrations on the [Aurora-DB](#aurora-db) cluster. This creates a Task Definition and a Security Group with all outbound access allowed. This is required for the Fargate Task to have access to the internet to pull SQL code from this project.
+
+The available variables and default values are as follows:
+
+| name | type | description | default |
+| ---- | ---- | ----------- | ------- |
+| `region` | string | The AWS region | `N/A` |
+| `vpc_name` | string | The name of the AWS VPC to create the Flyway Fargate Security Group in | `N/A` |
+| `registry_token` | string | The name of the Secrets Manager secret containing the docker image for the Flyway Fargate Task |
+| `auroradb_cluster_name` | string | The name for the auroradb cluster | `N/A` |
+| `task_name` | string | The name of the fargate task | `flyway-migration` |
+| `task_family_name` | string | The name of the fargate task family | `flyway-migration-family` |
+| `task_iam_role` | string | The IAM role for the flyway fargate task. Req: `kms:Decrypt`, `secretsmanager:GetSecretValue` | `N/A` |
+| `task_sg_name` | string | The name for the Flyway Fargate Security Group that will be created | `flyway-fargate-sg` |
+| `app_image` | string | The docker image for the fargate task | `N/A` |
+| `app_version` | string | The version of the docker image to use for the fargate task | `N/A` (will be auto-updated by the `build-flyway-docker-image-workflow.yml` GitHub workflow) |
+| `repository_deploy_key_secret` | string | The name of the AWS Secrets Manager secret holding the GitHub Deploy Key (SSH Key) |
+| `repository_owner` | string | The owner of the git repository. Ex: `sharebuilder-401k` for the repo `https://github.com/sharebuilder-401k/aurora-serverless-flyway-db` | `N/A` |
+| `repository_path` | string | The path for the git repository. EX: `aurora-serverless-flyway-db` for `https://github.com/sharebuilder-401k/aurora-serverless-flyway-db` | `N/A` |
+| `cloudwatch_log_group` | string | The name of the cloudwatch log group to send the ECS logs to | `N/A` |
+
+Example config for us-west-2 is provided in `var-files/us-west-2.tfvars`.
+
+```
+region = "us-west-2"
+
+vpc_name = "default-us-west-2"
+
+registry_token = "github@mreed19@registry_token" # CHANGE ME
+
+auroradb_cluster_name = "auroradb-cluster"
+
+task_iam_role = "flyway-migration-role"
+
+repository_deploy_key_secret = "github@Sharebuilder-401k@aurora-serverless-flyway-db@repository-deploy-key" # CHANGE ME
+
+repository_owner = "sharebuilder-401k" # CHANGE ME
+
+repository_path = "aurora-serverless-flyway-db" # CHANGE ME
+
+app_image = "docker.pkg.github.com/sharebuilder-401k/aurora-serverless-flyway-db/flyway" # CHANGE ME
+
+app_version = "0.0.0"
+
+cloudwatch_log_group = "/ecs_logs"
+```
+
+#### **Bastion**
+
+The infrastructure files to create a Bastion Host EC2 Instance. This instance will be used to establish an SSH Tunnel into the same VPC as the Aurora DB instance so a connection can be established from a local system. An `sshtunnel.sh` script has been provided if this method is used to establish a connection.
+
+An AWS Security Group is created allowing SSH ingress to the host from a provided list of CIDR ranges. While the SSH key helps to secure the instance, it is always a good idea to limit access to only the CIDR ranges that will be accessing the instance.
+
+An SSH key pair is required to connect to the Bastion Host Instance. This key pair can be generated using the same command as step 8 in [Repository Setup](#repository-setup).
+
+`ssh-keygen -m PEM -t rsa -b 4096 -C "<description>" -f <file_path>`
+
+The public key (.pub file) generated by the above command needs to be stored in S3 to be used for this setup.
+
+The available variables and default values are as follows:
+
+| name | type | description | default |
+| ---- | ---- | ----------- | ------- |
+| `region` | string | The AWS region | `N/A` |
+| `vpc_name` | string | The name of the VPC to deploy the bastion host in | `N/A` |
+| `subnet_names` | list(string) | The list of subnet names to deploy the bastion host in | `N/A` |
+| `bastion_sg_name` | string | The name of the bastion security group to be created | `bastion-sg` |
+| `ingress_cidrs` | list(string) | The list of cidr ranges allowed to connect to the bastion host | `N/A` |
+| `bastion_key_name` | string | The name of the Key pair used to connect to the bastion host | `bastion-key-pair` |
+| `public_key_bucket` | string | The S3 bucket that the public key file for the bastion key pair is stored in | `N/A` |
+| `public_key_path` | string | The S3 path to the public key file for the bastion key pair | `N/A` |
+| `bastion_host_name` | string | The name of the bastion host | `bastion-host` |
+
+Example config for us-west-2 is provided in `var-files/us-west-2.tfvars`.
+
+```
+region = "us-west-2"
+
+vpc_name = "default-us-west-2"
+
+subnet_names = ["default-us-west-2a", "default-us-west-2b", "default-us-west-2c"]
+
+public_key_bucket = "sharebuilder401k-ssh-keys-us-west-2" # CHANGE ME
+
+public_key_path = "public/bastion-host-key.pub" # CHANGE ME
+
+ingress_cidrs = ["0.0.0.0/0"] # CHANGE ME
+```
 
 ### GitHub Actions Config Setup
 
@@ -123,24 +317,93 @@ The `config.json` values are as follows:
 | `dockerRegistry` | The host name of the docker registry where the image for this repository to run flyway from ECS will be stored. | true | `"docker.pkg.github.com"` |
 | `dockerOwner` | The owner or organization where the docker image will be stored in the docker registry | true | `"CHANGE ME"` |
 | `dockerRepo` | The repo path where the docker image will be stored in the docker registry (does not include owner) | true | `"CHANGE ME"` |
-| `infrastructure` | An object with properties for each region to configure values to be used by GitHub actions. These values should match what is configured in the terrafrom files in the `infrastructure` folder. Multiple regions may be present. | true | Object with us-west-2 configuration object |
-| `infrastructure["<region>"]` | Ex: `infrastructure["us-west-2"]`. An object with properties for configuring infrastructure in the us-west-2 region. | true | An object with properties for infrastructure in the us-west-2 region |
-| `infrastructure["<region>"].terraformBucket` | The S3 bucket used to store terraform state files for the AWS infrastructure. | true | `"CHANGE ME"` |
-| `infrastructure["<region>"].auroraDB` | An object with properties for the Aurora DB infrastructure generated by terraform. | true | An object with values matching default terraform values |
-| `infrastructure["<region>"].auroraDB.dbClusterName` | The name of the Aurora DB cluster | true | `"auroradb-cluster"` |
-| `infrastructure["<region>"].auroraDB.dbSubnetGroup` | The name of the DB subnet group used by the Aurora DB cluster | true | `"auroradb-subnet-group"` |
-| `infrastructure["<region>"].auroraDB.vpcSecurityGroups` | A comma separated list of VPC security groups assigned to the Aurora DB cluster. | true | `"auroradb-sg"` |
-| `infrastructure["<region>"].flywayTask` | An object with properties for the Flyway ECS Task Definition infrastructure generated by terraform. | true | An object with values matching default terraform values. |
-| `infrastructure["<region>"].flywayTask.taskDefinitionFamily` | The name of the flyway Fargate Task Definition Family | true | `"flyway-migration-family"` |
-| `infrastructure["<region>"].flywayTask.taskLaunchType` | The launch type for the flyway Task Definition. This project is configured for FARGATE but can be modified for use with EC2 Launch Type. | true | `"FARGATE"` |
-| `infrastructure["<region>"].flywayTask.taskCluster` | The name of the ECS Cluster to launch the flyway task in. | true | `"ecs-cluster"` |
-| `infrastructure["<region>"].flywayTask.taskSubnets` | A comma separated list of subnets in which the flyway task can be launched. | true | `"default-us-west-2a,default-us-west-2b,default-us-west-2c"` |
-| `infrastructure["<region>"].flywayTask.taskSecurityGroups` | A comma separated list of security groups to assign to the flyway task | true | `"flyway-fargate-sg,auroradb-sg"` |
-| `infrastructure["<region>"].flywayTask.isPublicSubnet` | Are the subnets in which the flyway task is being launched public? (Does a Public IP address need to be assigned?) | true | `true` |
-| `infrastructure["<region>"].bastion` | An object with properties for the bastion host EC2 instance generated by terraform (if one is used) | false | An object with values matching default terraform values for the bastion host EC2 instance |
-| `infrastructure["<region>"].bastion.bastionHostName` | The name of the bastion host EC2 instance | false | `"bastion-host"` |
-| `infrastructure["<region>"].bastion.privateKeyBucket` | The name of the S3 bucket where the private SSH key for the bastion host EC2 instance is stored. | false | `"CHANGE ME"` |
-| `infrastructure["<region>"].bastion.privateKeyPath` | The path in the S3 bucket to the private SSH key for the bastion host EC2 instance | false | `"private/bastion-host-key"` |
+| `infrastructure` | An [Infrastructure Config Object](#infrastructure-config-object) | true | An object configured with default values from the [Infrastructure Config Object](#infrastructure-config-object) section |
+
+#### **Infrastructure Config Object**
+
+An object with properties for each region to configure values to be used by GitHub actions. These values should match what is configured in the terrafrom files in the `infrastructure` folder. Multiple regions may be present.
+
+| property | description | required | default |
+| -------- | ----------- | -------- | ------- |
+| `"<region>"` | An [Infrastructure Region Config Object](#infrastructure-region-config-object) | true | us-west-2 is configured by default with default values from the [Infrastructure Region Config Object](#infrastructure-region-config-object) section |
+
+#### **Infrastructure Region Config Object**
+
+An object containing infrastructure configuration for the AWS resources generated by the Terrafom in the repo.
+
+| property | description | required | default |
+| -------- | ----------- | -------- | ------- |
+| `"terraformBucket"` | The S3 bucket used to store terraform state files for the AWS infrastructure. | true | `"CHANGE ME"` |
+| `"auroraDB"` | An [Aurora DB Config Object](#aurora-db-config-object) | true | An object with values specified in the [Aurora DB Config Object](#aurora-db-config-object) section |
+| `"flywayTask"` | A [Flyway Task Config Object](#flyway-task-config-object) | true | An object with values specifed in the [Flyway Task Config Object](#flyway-task-config-object) section. |
+| `"bastion"` | A [Bastion Config Object](#bastion-config-object) | false | An object with default values specified in the [Bastion Config Object](#bastion-config-object) section. |
+
+#### **Aurora DB Config Object**
+
+An object with properties for the Aurora DB infrastructure generated by terraform.
+
+| property | description | required | default |
+| -------- | ----------- | -------- | ------- |
+| `"dbClusterName"` | The name of the Aurora DB cluster | true | `"auroradb-cluster"` |
+| `"dbSubnetGroup"` | The name of the DB subnet group used by the Aurora DB cluster | true |
+| `"vpcSecurityGroups"` | A comma separated list of VPC security groups assigned to the Aurora DB cluster. | true | `"auroradb-sg"` |
+
+#### **Flyway Task Config Object**
+
+An object with properties for the Flyway Fargate Task infrastructure generated by terraform.
+
+| property | description | required | default |
+| -------- | ----------- | -------- | ------- |
+| `"taskDefinitionFamily"` | The name of the flyway Fargate Task Definition Family | true | `"flyway-migration-family"` |
+| `"taskLaunchType"` | The launch type for the flyway Task Definition. This project is configured for FARGATE but can be modified for use with EC2 Launch Type. | true | `"FARGATE"` |
+| `"taskCluster"` | The name of the ECS Cluster to launch the flyway task in. | true | `"ecs-cluster"` |
+| `"taskSubnets"` | A comma separated list of subnets in which the flyway task can be launched. | true | `"default-us-west-2a,default-us-west-2b,default-us-west-2c"` |
+| `"taskSecurityGroups"` | A comma separated list of security groups to assign to the flyway task | true | `"flyway-fargate-sg,auroradb-sg"` |
+| `"isPublicSubnet"` | Are the subnets in which the flyway task is being launched public? (Does a Public IP address need to be assigned?) | true | `true` |
+
+#### **Bastion Config Object**
+
+An object with properties for the bastion host EC2 instance generated by terraform. This object is only required if the bastion host is setup and the `sshtunel.sh` is used.
+
+| property | description | required | default |
+| -------- | ----------- | -------- | ------- |
+| `"bastionHostName"` | The name of the bastion host EC2 instance | false | `"bastion-host"` |
+| `"privateKeyBucket"` | The name of the S3 bucket where the private SSH key for the bastion host EC2 instance is stored. | false | `"CHANGE ME"` |
+| `"privateKeyPath"` | The path in the S3 bucket to the private SSH key for the bastion host EC2 instance | false | `"private/bastion-host-key"` |
+
+### Deploy Infrastructure
+
+Infrastructure can be deployed through GitHub Actions by using the `trigger_workflow.sh` script. To initiate the `deploy_infrastructure` workflows, do the following:
+
+1. Create an environment variable to store a Personal Access Token with `repo` scope (such as the one created in steps 11-15 of [Repository Setup](#repository-setup)). The variable name should match the value of the `githubTokenName` property in config.json.
+    - Ex: `export GITHUB_AURORA_ACTIONS_TOKEN="<token_value>"`
+2. Run `./trigger_workflow.sh`
+    - ![trigger-workflow-menu](assets/trigger-workflow-menu.png)
+3. Enter `2` for `deploy_infrastructure`.
+4. Select the region you would like to deploy to. (Menu options are created based on [Infrastructure Obect Config](#infrastructure-config-object) property keys)
+    - ![deploy-infrastructure-region-menu](assets/deploy-infrastructure-region-menu.png)
+5. Select the infrastructure to be deployed.
+    - ![deploy-infrastructure-selection-menu](assets/deploy-infrastructure-selection-menu.png)
+6. A success message should be displayed with a link to GitHub actions for the project
+    - ![deploy-infrastructure-invocation](assets/deploy-infrastructure-invocation.png)
+7. Navigate to the GitHub actions link and select the running `deploy_infrastructure` workflow to monitor its progress.
+    - ![github-actions-deploy-infrastructure-all-workflows](assets/github-actions-deploy-infrastructure-all-workflows.png)
+8. Select the running `deploy` job on the left hand side to view the job logs
+    - ![github-actions-deploy-infrastructure-running-workflow](assets/github-actions-deploy-infrastructure-running-workflow.png)
+
+If deploying all of the infrastructure, they should be deployed in the following order:
+  1. aurora-db
+  2. bastion (optional)
+  3. ecs-cluster
+  4. fargate-iam
+  5. flyway-fargate-task
+
+#### **Destroy Infrastructure**
+
+Destroying infrastructure follows the same steps as deploying infrastructure. Just select the `trigger_workflow.sh` menu option for `destroy_infrastructure` instead and follow the prompts.
+
+### Build Flyway Docker Image
+
 
 
 # Database Documentation

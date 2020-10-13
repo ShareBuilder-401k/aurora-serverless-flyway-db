@@ -16,7 +16,6 @@ variable "registry_token" {
 variable "auroradb_cluster_name" {
   type        = string
   description = "The name for the auroradb cluster"
-  default     = "auroradb-cluster"
 }
 
 variable "task_name" {
@@ -70,5 +69,4 @@ variable "repository_path" {
 variable "cloudwatch_log_group" {
   type        = string
   description = "The name of the cloudwatch log group to send the ecs-logs to"
-  default     = "/ecs_logs"
 }
