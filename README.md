@@ -144,7 +144,7 @@ The Terraform infrastructure is split into the the following sections:
 - [Flyway-Fargate-Task](#flyway-fargate-task)
 - [Bastion](#bastion)
 
-Each section has a `variables.tf` file describing the variables that can be provided for the infrastructure and any default values if there are any. These variables are provided via `var-files/<region>.tfvars` files (Ex: `var-files/us-west-2.tfvars`).
+Each section has a `variables.tf` file describing the variables that can be provided for the infrastructure and any default values if there are any. These variables are provided via `var-files/<region>.tfvars` files (Ex: `var-files/us-west-2.tfvars`). Default values can be overridden by providing a new value in the variable file. Variables that do not have a default definied in `variables.tf` are required and must be set in the region's `.tfvars` file.
 
 An S3 Bucket to store Terraform state files is required.
 

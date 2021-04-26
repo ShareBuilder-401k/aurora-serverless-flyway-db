@@ -72,7 +72,12 @@ select action in "${actions[@]}"; do
       echo ""
       echo "Infrastructure: ${infrastructure_folder}"
 
-      terraform_bucket="$(jq --arg region "${region}" -r '.infrastructure[$region].terraformBucket // "aurora-flyway-terraform-us-west-2"' config.json)"
+      terraform_bucket="$(jq --arg region "${region}" -r '.infrastructure[$region].terraformBucket // "CHANGE ME"' config.json)"
+
+      if [[ "${terraform_bucket}" == "CHANGE ME" ]]; then
+        echo "infrastructure[\"${region}\"].terraformBucket must be changed in config.json" >&2
+        exit 1
+      fi
 
       client_payload="{\"region\": \"${region}\", \"bucket\": \"${terraform_bucket}\", \"infrastructure_folder\": \"${infrastructure_folder}\"}"
 
@@ -163,8 +168,13 @@ echo "${curl_data}"
 token_name="$(jq -r '.githubTokenName // "GITHUB_AURORA_ACTIONS_TOKEN"' config.json)"
 eval "token_value=\$${token_name}"
 
-github_owner="$(jq -r '.githubOwner // "sharebuilder-401k"' config.json)"
-github_repo="$(jq -r '.githubRepo // "aurora-serverless-flyway-db"' config.json)"
+github_owner="$(jq -r '.githubOwner // "CHANGE ME"' config.json)"
+github_repo="$(jq -r '.githubRepo // "CHANGE ME"' config.json)"
+
+if [[ "${github_owner}" == "CHANGE ME" || "${github_repo}" == "CHANGE ME" ]]; then
+  echo "githubOwner and githubRepo must be changed in config.json" >&2
+  exit 1
+fi
 
 status_code="$(curl -H "Accept: application/vnd.github.v3+json" \
   -H "Authorization: token ${token_value}" \

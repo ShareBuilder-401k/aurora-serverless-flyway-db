@@ -9,8 +9,13 @@ fi
 
 # Get docker registry and repo details from config.json
 docker_registry="$(jq -r '.dockerRegistry // "docker.pkg.github.com"' config.json)"
-docker_owner="$(jq -r '.dockerOwner // "sharebuilder-401k"' config.json)"
-docker_repo="$(jq -r '.dockerRepo // "aurora-serverless-flyway-db"' config.json)"
+docker_owner="$(jq -r '.dockerOwner // "CHANGE ME"' config.json)"
+docker_repo="$(jq -r '.dockerRepo // "CHANGE ME"' config.json)"
+
+if [[ "${docker_owner}" == "CHANGE ME" || "${docker_repo}" == "CHANGE ME" ]]; then
+  echo "dockerOwner and dockerRepo must be changed in config.json" >&2
+  exit 1
+fi
 
 # Login to Docker Registry
 echo "${DOCKER_AUTH_TOKEN}" | docker login "${docker_registry}" -u "${GITHUB_ACTOR}" --password-stdin

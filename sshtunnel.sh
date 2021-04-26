@@ -32,9 +32,14 @@ region_config="$(jq --arg region "${region}" -r '.infrastructure[$region]' confi
 
 # Get connection details from config.json
 bastion_host_name="$(jq -r '.bastion.bastionHostName // "bastion-host"' <<< "${region_config}")"
-bastion_key_bucket="$(jq -r '.bastion.privateKeyBucket // "sharebuilder401k-ssh-keys-us-west-2"' <<< "${region_config}")"
+bastion_key_bucket="$(jq -r '.bastion.privateKeyBucket // "CHANGE ME"' <<< "${region_config}")"
 bastion_key_path="$(jq -r '.bastion.privateKeyPath // "private/bastion-host-key"' <<< "${region_config}")"
 aurora_db_cluster_name="$(jq -r '.auroraDB.dbClusterName // "aurora-cluster"' <<< "${region_config}")"
+
+if [[ "${bastion_key_bucket}" == "CHANGE ME" ]]; then
+  echo "bastion.privateKeyBucket must be changed in config.json" >&2
+  exit 1
+if
 
 # Get Aurora DB host endpoint from cluster nmae
 aurora_db_host="$(aws rds describe-db-cluster-endpoints --db-cluster-identifier "${aurora_db_cluster_name}" --query 'DBClusterEndpoints[*].Endpoint' --output text)"
