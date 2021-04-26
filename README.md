@@ -11,6 +11,7 @@ Aurora Serverless Flyway DB is a template project that is used to setup an [Amaz
 - [Getting Started](#getting-started)
   - [Repository Setup](#repository-setup)
   - [Secrets Manager Setup](#secrets-manager-setup)
+    - [Adding New Database Users](#adding-new-database-users)
   - [Terraform Infrastructure Setup](#terraform-infrastructure-setup)
     - [Aurora-DB](#aurora-db)
     - [ECS-Cluster](#ecs-cluster)
@@ -134,7 +135,7 @@ This section will go over the steps to setup this project and get a database up 
       - `postgresql@auroradb@master@read_only`
       - `postgresql@auroradb@sample@sample_application`
 
-#### Adding new Database Users
+#### Adding New Database Users
 
 As mentioned above, Secrets Manager can be used to store credentials for new users during development. This is done by creating a versioned migration that will use [Flyway Placeholders](https://flywaydb.org/documentation/configuration/placeholder) for the password value. Mock values can be used for the local setup which is gone over in more detail in the [Local Database](#local-database) section. To create a placeholder in the SQL code, use a key name surround by `${}` in your sql file. Then, supply the placeholder a value in the flyway options `-placeholders.<key>=<value>`. See the [read-only user creation](./sql/v1.0/V1.0.0__CreateReadOnlyUser.sql) and [docker-compose.yml](./docker-compose.yml) for an example of how to create and supply values to a placeholder.
 
