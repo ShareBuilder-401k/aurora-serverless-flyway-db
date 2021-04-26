@@ -134,6 +134,61 @@ This section will go over the steps to setup this project and get a database up 
       - `postgresql@auroradb@master@read_only`
       - `postgresql@auroradb@sample@sample_application`
 
+#### Adding new Database Users
+
+As mentioned above, Secrets Manager can be used to store credentials for new users during development. This is done by creating a versioned migration that will use [Flyway Placeholders](https://flywaydb.org/documentation/configuration/placeholder) for the password value. Mock values can be used for the local setup which is gone over in more detail in the [Local Database](#local-database) section. To create a placeholder in the SQL code, use a key name surround by `${}` in your sql file. Then, supply the placeholder a value in the flyway options `-placeholders.<key>=<value>`. See the [read-only user creation](./sql/v1.0/V1.0.0__CreateReadOnlyUser.sql) and [docker-compose.yml](./docker-compose.yml) for an example of how to create and supply values to a placeholder.
+
+Once the secret has been created and stored in Secrets Manager in the same way as above and the placeholder has been added to the SQL code, the following files need to be updated to retrieve or supply values for the placeholder:
+
+These steps will assume a placholder of `TEMP_USER_PASSWORD` and a secret named `postgresql@auroradb@sample@temp_user`
+
+- [docker-compose.yml](./docker-compose.yml)
+  - Add the placeholder and a mock value to the list of command arguments send to the `flyway` image. This password is only used on the Local Database.
+    - ```yml
+      flyway:
+        ...
+        command: [
+            ...
+            "-placeholders.TEMP_USER_PASSWORD=password",
+            "migrate"
+        ]
+      ```
+- [docker/scripts/flyway-rds-migration.sh](./docker/scripts/flyway-rds-migration.sh)
+  - Add the Secrets Manager call to retrieve the password in the `# Get DB user Passwords` section and add the result to the `FLYWAY_OPTIONS` array as a placeholder value.
+    - ```sh
+
+      ...
+
+      # Get DB user Passwords
+      ...
+      TEMP_USER_PASSWORD=$(aws secretsmanager get-secret-value --secret-id postgresql@auroradb@sample@temp_user --region "${REGION}" --query SecretString --output text | jq -r '.password')
+
+      ...
+
+      FLYWAY_OPTIONS=(
+          ...
+          "-placeholders.TEMP_USER_PASSWORD=${TEMP_USER_PASSWORD}"
+      )
+      ...
+      ```
+- [.github/actions/generate-markdown-action/entrypoint.sh](./.github/actions/generate-markdown-action/entrypoint.sh)
+  - Add a mock value to the placeholder value in the `FLYWAY_OPTIONS` array. This action uses an empty database to just generate the schema on a docker image before destroying it so the value is not important
+    - ```sh
+      ...
+      FLYWAY_OPTIONS=(
+          ...
+          -placeholders.TEMP_USER_PASSWORD=password
+      )
+
+      ...
+      ```
+
+*Hint*: A random password can be generated using
+
+```sh
+openssl rand -base64 29 | tr -d "=+/" | cut -c1-25
+```
+
 ### Terraform Infrastructure Setup
 
 The Terraform infrastructure is split into the the following sections:
