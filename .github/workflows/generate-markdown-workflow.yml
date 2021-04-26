@@ -4,7 +4,7 @@ on:
     types: generate_markdown
   push:
     paths:
-    - 'sql/**'
+      - 'sql/**'
 jobs:
   generate-markdown:
     runs-on: ubuntu-latest

@@ -4,7 +4,7 @@ on:
     types: build_flyway
   push:
     paths:
-    - 'docker/**'
+      - 'docker/**'
 jobs:
   build-flyway:
     runs-on: ubuntu-latest
