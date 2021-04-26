@@ -1,16 +1,16 @@
 {
 	"flywayVersion": "0.0.0",
-	"githubOwner": "sharebuilder-401k",
-	"githubRepo": "aurora-serverless-flyway-db",
+	"githubOwner": "CHANGE ME",
+	"githubRepo": "CHANGE ME",
 	"gitbotEmail": "aurora.gitbot@example.com",
 	"gitbotName": "aurora-gitbot",
 	"githubTokenName": "GITHUB_AURORA_ACTIONS_TOKEN",
 	"dockerRegistry": "docker.pkg.github.com",
-	"dockerOwner": "sharebuilder-401k",
-	"dockerRepo": "aurora-serverless-flyway-db",
+	"dockerOwner": "CHANGE ME",
+	"dockerRepo": "CHANGE ME",
 	"infrastructure": {
 		"us-west-2": {
-			"terraformBucket": "aurora-flyway-terraform-us-west-2",
+			"terraformBucket": "CHANGE ME",
 			"auroraDB": {
 				"dbClusterName": "auroradb-cluster",
 				"dbSubnetGroup": "auroradb-subnet-group",
@@ -26,7 +26,7 @@
 			},
 			"bastion": {
 				"bastionHostName": "bastion-host",
-				"privateKeyBucket": "sharebuilder401k-ssh-keys-us-west-2",
+				"privateKeyBucket": "CHANGE ME",
 				"privateKeyPath": "private/bastion-host-key"
 			}
 		}

@@ -1,6 +1,6 @@
 # Aurora Serverless Flyway DB
 
-Aurora Serverless Flyway DB is a template project that is used to setup an [Amazon Aurora Serverless Database](https://aws.amazon.com/rds/aurora/serverless/) that is integrated with [Flyway](https://flywaydb.org/) to manage database migrations. This integration is accomplished through the use of an ECS Fargate task along with the help of GitHub Actions.
+Aurora Serverless Flyway DB is a template project that is used to setup an [Amazon Aurora Serverless Database](https://aws.amazon.com/rds/aurora/serverless/) that is integrated with [Flyway](https://flywaydb.org/) to manage database migrations. This integration is accomplished through the use of an [AWS ECS Fargate](https://aws.amazon.com/fargate) task along with the help of [GitHub Actions](https://github.com/features/actions).
 
 ## Contents
 - [Overview](#overview)
@@ -74,8 +74,6 @@ Versioned migrations are migrations that are executed in order according to thei
 
 Repeatable migrations are migrations that are reapplied every time their checksum changes (every time the file is modified). These are good for database objects that can be maintained in a single file in version control, such as stored procedures and bulk inserts. Repeatable migrations are always applied after versioned migrations.
 
-For this project, flyway will search through the `sql/` directory to find all filenames matching either `V<version>__<Version_Description>.sql` for versioned migrations or `R__<Repeatable_Description>.sql` fro repeatable migrations.
-
 ![flyway-folder-structure](assets/flyway-folder-structure.png)
 
 ### GitHub Actions
@@ -92,19 +90,25 @@ This section will go over the steps to setup this project and get a database up 
 2. Follow the prompts to set the repository owner, name, and visibility and to optionally include all branches if desired.
 3. In the new repository, navigate to **Actions** from the top menu bar and click **Enable Actions on this repository**.
 4. Navigate to **Settings -> Secrets** and click **New secret**
-5. Add a secret for `AWS_ACCESS_KEY_ID` for the AWS account credentials.
+5. Add a secret for `AWS_ACCESS_KEY_ID` for the AWS account credentials.<sup>*</sup>
 6. Repeat step 4 and add a secret for `AWS_SECRET_ACCESS_KEY` for the AWS account credentials.
-7. Navigate to **Settings -> Deploy Keys** and click **Add deploy key**
+7. Navigate to **Settings -> Deploy Keys** and click **Add deploy key**. <sup>**</sup>
 8. In a terminal, run `ssh-keygen -m PEM -t rsa -b 4096 -C "<repository_name> read-repository" -f <file_path>`
    - Example: `ssh-keygen -m PEM -t rsa -b 4096 -C "aurora-serverless-flyway-db read-repository" -f ~/.ssh/aurora-serverless-flyway-db`
-9. Back in GitHub, copy the contents of the public key file generated from the `ssh-keygen` command into the **Key** section. The public key file will be in the format of `<file_path>.pub`.
+9.  Back in GitHub, copy the contents of the public key file generated from the `ssh-keygen` command into the **Key** section. The public key file will be in the format of `<file_path>.pub`.
 10. Add a title and click **Add key**. Write access is not needed for this deploy key.
 11. Click the profile picture in the top right corner and click **Settings**
 12. Click **Developer settings** in the settings menu.
-13. Select **Personal access tokens** and click **Generate new token**.
+13. Select **Personal access tokens** and click **Generate new token**. <sup>***</sup>
 14. Select `repo` and `read:packages` scope and click **Generate token**.
 15. Copy the generated token and store it in a secure location.
   - This token will be used by the Flyway task to pull the docker image. It can also be used to trigger GitHub actions by creating `repository_dispatch` events.
+
+<sub><sup>*</sup>Click [here](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html) for help with AWS credentials.</sub>
+
+<sub><sup>**</sup> Click [here](https://docs.github.com/en/developers/overview/managing-deploy-keys) for help with GitHub Deploy Keys.</sub>
+
+<sub><sup>***</sup> Click [here](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token) for help with GitHub Personal Access Tokens.</sub>
 
 ### Secrets Manager Setup
 
@@ -112,7 +116,7 @@ This section will go over the steps to setup this project and get a database up 
 2. Navigate to **Services -> Secrets Manager**.
 3. Click **Store a new secret**.
 4. Select **Other type of secrets**.
-5. Under **Specify the key/value pairs to be stred in this secret**, select **Plaintext** and copy the contents of the private key for the deploy key generated in step 8 of [Repository Setup](#repository-setup).
+5. Under **Specify the key/value pairs to be stored in this secret**, select **Plaintext** and copy the contents of the private key for the deploy key generated in step 8 of [Repository Setup](#repository-setup).
 6. Select an encryption key or use the `DefaultEncryptionKey` and click **Next**.
 7. Specify a **Secret name** and **Description** for the secret and click **Next**.
     - I like to name my secrets describing their use separating descriptors by the `@` symbol. Ex: `github@<repo_owner>@<repo_path>@repository-deploy-key`.
@@ -134,13 +138,13 @@ This section will go over the steps to setup this project and get a database up 
 
 The Terraform infrastructure is split into the the following sections:
 
-- aurora-db
-- bastion
-- ecs-cluster
-- fargate-iam
-- flyway-fargate-task
+- [Aurora-DB](#aurora-db)
+- [ECS-Cluster](#ecs-cluster)
+- [Fargate-IAM](#fargate-iam)
+- [Flyway-Fargate-Task](#flyway-fargate-task)
+- [Bastion](#bastion)
 
-Each section has a `variables.tf` file describing the variables that can be provided for the infrastructure and any default values if there are any. These variables are provided via `var-files/<region>.tfvars` files (Ex: `us-west-2.tfvars`).
+Each section has a `variables.tf` file describing the variables that can be provided for the infrastructure and any default values if there are any. These variables are provided via `var-files/<region>.tfvars` files (Ex: `var-files/us-west-2.tfvars`).
 
 An S3 Bucket to store Terraform state files is required.
 
@@ -229,7 +233,7 @@ The available variables and default values are as follows:
 | ---- | ---- | ----------- | ------- |
 | `region` | string | The AWS region | `N/A` |
 | `vpc_name` | string | The name of the AWS VPC to create the Flyway Fargate Security Group in | `N/A` |
-| `registry_token` | string | The name of the Secrets Manager secret containing the docker image for the Flyway Fargate Task |
+| `registry_token` | string | The name of the Secrets Manager secret containing the docker image for the Flyway Fargate Task | `N/A` |
 | `auroradb_cluster_name` | string | The name for the auroradb cluster | `N/A` |
 | `task_name` | string | The name of the fargate task | `flyway-migration` |
 | `task_family_name` | string | The name of the fargate task family | `flyway-migration-family` |
@@ -237,12 +241,12 @@ The available variables and default values are as follows:
 | `task_sg_name` | string | The name for the Flyway Fargate Security Group that will be created | `flyway-fargate-sg` |
 | `app_image` | string | The docker image for the fargate task | `N/A` |
 | `app_version` | string | The version of the docker image to use for the fargate task | `N/A` (will be auto-updated by the `build-flyway-docker-image-workflow.yml` GitHub workflow) |
-| `repository_deploy_key_secret` | string | The name of the AWS Secrets Manager secret holding the GitHub Deploy Key (SSH Key) |
+| `repository_deploy_key_secret` | string | The name of the AWS Secrets Manager secret holding the GitHub Deploy Key (SSH Key) | `N/A` |
 | `repository_owner` | string | The owner of the git repository. Ex: `sharebuilder-401k` for the repo `https://github.com/sharebuilder-401k/aurora-serverless-flyway-db` | `N/A` |
 | `repository_path` | string | The path for the git repository. EX: `aurora-serverless-flyway-db` for `https://github.com/sharebuilder-401k/aurora-serverless-flyway-db` | `N/A` |
 | `cloudwatch_log_group` | string | The name of the cloudwatch log group to send the ECS logs to | `N/A` |
 
-Example config for us-west-2 is provided in `var-files/us-west-2.tfvars`.
+Example config for us-west-2 is provided in `var-files/us-west-2.tfvars`. This example assumes values specific to this repository and should be changed to match the repository created from this template.
 
 ```
 region = "us-west-2"
@@ -272,7 +276,7 @@ cloudwatch_log_group = "/ecs_logs"
 
 The infrastructure files to create a Bastion Host EC2 Instance. This instance will be used to establish an SSH Tunnel into the same VPC as the Aurora DB instance so a connection can be established from a local system. An `sshtunnel.sh` script has been provided if this method is used to establish a connection.
 
-An AWS Security Group is created allowing SSH ingress to the host from a provided list of CIDR ranges. While the SSH key helps to secure the instance, it is always a good idea to limit access to only the CIDR ranges that will be accessing the instance.
+An AWS Security Group is created allowing SSH ingress to the host from a provided list of CIDR ranges (IP Addresses). While the SSH key helps to secure the instance, it is always a good idea to limit access to only the CIDR ranges that will be accessing the instance.
 
 An SSH key pair is required to connect to the Bastion Host Instance. This key pair can be generated using the same command as step 8 in [Repository Setup](#repository-setup).
 
@@ -294,7 +298,7 @@ The available variables and default values are as follows:
 | `public_key_path` | string | The S3 path to the public key file for the bastion key pair | `N/A` |
 | `bastion_host_name` | string | The name of the bastion host | `bastion-host` |
 
-Example config for us-west-2 is provided in `var-files/us-west-2.tfvars`.
+Example config for us-west-2 is provided in `var-files/us-west-2.tfvars`. The `public_key_bucket`, `public_key_path` and `ingress_cidrs` should be changed to point to the location of your public key in S3 and the `ingress_cidrs` should be changed to the CIDR ranges you would like to allow access to.
 
 ```
 region = "us-west-2"
@@ -355,7 +359,7 @@ An object with properties for the Aurora DB infrastructure generated by terrafor
 | property | description | required | default |
 | -------- | ----------- | -------- | ------- |
 | `"dbClusterName"` | The name of the Aurora DB cluster | true | `"auroradb-cluster"` |
-| `"dbSubnetGroup"` | The name of the DB subnet group used by the Aurora DB cluster | true |
+| `"dbSubnetGroup"` | The name of the DB subnet group used by the Aurora DB cluster | true | `"auroradb-subnet-group"` |
 | `"vpcSecurityGroups"` | A comma separated list of VPC security groups assigned to the Aurora DB cluster. | true | `"auroradb-sg"` |
 
 #### **Flyway Task Config Object**
@@ -418,7 +422,7 @@ This workflow runs the [`scripts/build_flyway_docker_image.sh`](scripts/build_fl
 
 This workflow is configured by the [`.github/workflows/build-flyway-docker-image.yml`](.github/workflows/build-flyway-docker-image-workflow.yml) file. This workflow can be triggered by selecting the `build_flyway` option of the `./trigger_workflow.sh` script. It is also triggered automatically on github pushes when there are any changes to the files used to generate this image in the `/docker` folder.
 
-The files for building this image are a `Dockerfile` with build instructions and a `/scripts` folder for scripts to be executed by the docker image. In the `/scripts` folder, a `flyway-rds-migration.sh` file is provided to accept a github branch as an argument, pull the github repository deploy key  for this project, get the SQL code for this project from the given banch, fetch SQL credentials, and run the flyway migration on the Aurora DB Cluster.
+The files for building this image are a `Dockerfile` with build instructions and a `/scripts` folder for scripts to be executed by the docker image. In the `/scripts` folder, a `flyway-rds-migration.sh` file is provided to accept a github branch as an argument, pull the github repository deploy key for this project, get the SQL code from the given banch, fetch SQL credentials, and run the flyway migration on the Aurora DB Cluster.
 
 A [Deploy Infrastructure](#deploy-infrastructure) workflow must be run for `flyway-fargate-task` to update the deployed Task Definition to use a newly created image.
 
@@ -528,7 +532,7 @@ docker run --rm -v $PWD/<sql migration folder>:/flyway/sql flyway/flyway [option
 
 ## Connecting to the Database
 
-A connection to the Databse can be established using any PostgreSQL-approved editor, or using psql, Postgresql's command-line tool. First, download postgresql via the interactive installer using this link to get both psql and PG Admin, their approved editor, on your machine: [Download PostgreSQL](https://www.postgresql.org/download/macosx/).
+A connection to the Database can be established using any PostgreSQL-approved editor, or using psql, Postgresql's command-line tool. First, download postgresql via the interactive installer using this link to get both psql and PG Admin, their approved editor, on your machine: [Download PostgreSQL](https://www.postgresql.org/download/macosx/).
 
 The breakdown of connection steps is below for each.
 
@@ -566,20 +570,20 @@ Server version: PostgreSQL 12.4 on x86_64-pc-linux-musl, compiled by gcc (Alpine
 
 column | comment | type | length | default | constraints | values
 --- | --- | --- | --- | --- | --- | ---
-**installed_rank** _(pk)_ |  | integer |  |  | NOT NULL | 
-version |  | character varying | 50 |  |  | 
-description |  | character varying | 200 |  | NOT NULL | 
-type |  | character varying | 20 |  | NOT NULL | 
-script |  | character varying | 1000 |  | NOT NULL | 
-checksum |  | integer |  |  |  | 
-installed_by |  | character varying | 100 |  | NOT NULL | 
-installed_on |  | timestamp without time zone |  | now() | NOT NULL | 
-execution_time |  | integer |  |  | NOT NULL | 
-success |  | boolean |  |  | NOT NULL | 
+**installed_rank** _(pk)_ |  | integer |  |  | NOT NULL |
+version |  | character varying | 50 |  |  |
+description |  | character varying | 200 |  | NOT NULL |
+type |  | character varying | 20 |  | NOT NULL |
+script |  | character varying | 1000 |  | NOT NULL |
+checksum |  | integer |  |  |  |
+installed_by |  | character varying | 100 |  | NOT NULL |
+installed_on |  | timestamp without time zone |  | now() | NOT NULL |
+execution_time |  | integer |  |  | NOT NULL |
+success |  | boolean |  |  | NOT NULL |
 
 #### public.sample
 
 column | comment | type | length | default | constraints | values
 --- | --- | --- | --- | --- | --- | ---
-**id** _(pk)_ |  | integer |  | nextval('sample_id_seq'::regclass) | NOT NULL | 
-message |  | character varying | 255 |  |  | 
+**id** _(pk)_ |  | integer |  | nextval('sample_id_seq'::regclass) | NOT NULL |
+message |  | character varying | 255 |  |  |
