@@ -8,7 +8,7 @@ if [[ "${GITHUB_REF}" != "refs/heads/master" ]]; then
 fi
 
 # Get docker registry and repo details from config.json
-docker_registry="$(jq -r '.dockerRegistry // "docker.pkg.github.com"' config.json)"
+docker_registry="$(jq -r '.dockerRegistry // "ghcr.io"' config.json)"
 docker_owner="$(jq -r '.dockerOwner // "CHANGE ME"' config.json)"
 docker_repo="$(jq -r '.dockerRepo // "CHANGE ME"' config.json)"
 

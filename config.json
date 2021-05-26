@@ -5,7 +5,7 @@
 	"gitbotEmail": "aurora.gitbot@example.com",
 	"gitbotName": "aurora-gitbot",
 	"githubTokenName": "GITHUB_AURORA_ACTIONS_TOKEN",
-	"dockerRegistry": "docker.pkg.github.com",
+	"dockerRegistry": "ghcr.io",
 	"dockerOwner": "CHANGE ME",
 	"dockerRepo": "CHANGE ME",
 	"infrastructure": {
