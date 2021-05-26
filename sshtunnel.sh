@@ -39,7 +39,7 @@ aurora_db_cluster_name="$(jq -r '.auroraDB.dbClusterName // "aurora-cluster"' <<
 if [[ "${bastion_key_bucket}" == "CHANGE ME" ]]; then
   echo "bastion.privateKeyBucket must be changed in config.json" >&2
   exit 1
-if
+fi
 
 # Get Aurora DB host endpoint from cluster nmae
 aurora_db_host="$(aws rds describe-db-cluster-endpoints --db-cluster-identifier "${aurora_db_cluster_name}" --query 'DBClusterEndpoints[*].Endpoint' --output text)"
